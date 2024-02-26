@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+
+<body>
+    <div class="body-wrapper">
+        <div class="container-fluid">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                  <li class="breadcrumb-item" aria-current="page">Holiday</li>
+                </ol>
+            </nav>
+
+
+
+            <div class="row">
+                <div class="col-md-7 offset-md-2">
+                    <h1 class="text-center text-white mb-3">Add Holiday</h1>
+                    <form method="post" action="{% url 'company_holiday_new_add' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group row mb-4">
+                        <label for="name" class="col-sm-3 col-form-label">Title</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        </div>
+                        <div class="form-group row mb-4">
+                        <label for="start_date" class="col-sm-3 col-form-label">Start Date</label>
+                        <div class="col-sm-9">
+                            <input type="date" class="form-control" id="start_date" name="sdate" required>
+                        </div>
+                        </div>
+                        <div class="form-group row mb-4">
+                        <label for="end_date" class="col-sm-3 col-form-label">End Date</label>
+                        <div class="col-sm-9">
+                            <input type="date" class="form-control" id="end_date" name="edate" required>
+                        </div>
+                        </div>
+                        <div class="form-group row mb-4">
+                        <div class="col-sm-9 offset-sm-3">
+                            <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="agree" required>
+                            <label class="form-check-label" for="agree">Agree to the terms and conditions</label>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="form-group row">
+                        <div class="col-sm-9 offset-sm-3">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="{% url 'company_holiday_new' %}" class="btn btn-danger">Cancel</a>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+              </div>
+
+
+
+</body>
+
+
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+
+<style>
+    table tr td:hover {
+    cursor: pointer;
+  }
+</style>
+
+<body>
+  
+    <div class="body-wrapper">
+      <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+            <li class="breadcrumb-item" aria-current="page">Holiday</li>
+          </ol>
+        </nav>
+        <div style="overflow-x:auto;"> 
+          <h1 class="text-center text-white">ALL HOLIDAYS</h1>
+          <a href="{% url 'company_holiday_new' %}"><i class="fa fa-plus text-yellow" ></i>New</a>
+          <div class="table-responsive">
+            <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+              <thead>
+                <tr class="border-bottom border-dark">
+                  <th scope="col" ><b>Sl no.</b></th>
+                  <th scope="col" ><b>Month</b></th>
+                  <th scope="col" ><b>Year</b></th>
+                  <th scope="col" ><b>Holidays</b></th>
+                  <th scope="col" ><b>Working days</b></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-bottom border-dark">
+                  
+                </tr>
+                
+                
+
+
+              </tbody>
+            </table> 
+    
+          </div> 
+        </div>
+  
+      </div>
+    </div>
+  </body>
+
+
+
+
+{% endblock %}
