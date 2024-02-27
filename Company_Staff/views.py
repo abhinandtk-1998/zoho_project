@@ -522,28 +522,69 @@ def company_trial_feedback(request):
     
     
 def company_holiday(request):
-    user_id = request.user.id
-    company_id = CompanyDetails.objects.get(login_details=user_id)
-    holiday_list = Holiday.objects.filter(user=user_id,company=company_id)
+
+    month_list = []
+    year_list = []
+    date_list = []
+    holiday_list = Holiday.objects.all()
+    for h in holiday_list:
+        for d in range(h.start_date, h.end_date):
+            if d not in date_list:
+                date_list.append(d)
+
     
-    context = {
-        'holiday_list':holiday_list
-    }
-    return render(request,'company/company_holiday.html',context)
+
+    low_month = date_list[0].month
+    high_month = date_list[0].month
+    low_year = date_list[0].year
+    high_year = date_list[0].year
+
+    for d in date_list:
+        if d.month > high_month:
+            high_month = d.month
+        if d.month < low_month:
+            low_month = d.month
+        if d.year < low_year:
+            low_year = d.year
+        if d.year > high_year:
+            high_year = d.year
+
+    for  d in date_list:
+        if d.month not in month_list:
+            month_list.append(d.month)
+
+        if d.year not in year_list:
+            year_list.append(d.year)
+
+    year_list.sort()
+
+    month_table = {}
+    
+    for y in year_list:
+        for m in month_list:
+            
+
+   
+
+
+
+        
+    return render(request,'company/company_holiday.html')
 
 
 def company_holiday_new(request):
     return render(request,'company/company_holiday_new.html')
 
 def company_holiday_new_add(request):
-    user_id = request.user.id
-    company_id = CompanyDetails.objects.get(login_details=user_id)
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
     if request.method=="POST":
         title=request.POST['title']
         s_date=request.POST['sdate']
         e_date=request.POST['edate']
 
-        holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=user_id,company=company_id)
+        holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id)
         holiday_d.save()
         
         return redirect('company_holiday')
