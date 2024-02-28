@@ -24,6 +24,7 @@ from io import BytesIO
 from django.db.models import Max
 from django.db.models import Q
 from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
+import calendar
 
 # Create your views here.
 
@@ -527,49 +528,60 @@ def company_holiday(request):
     year_list = []
     date_list = []
     holiday_list = Holiday.objects.all()
-    for h in holiday_list:
-        for d in range(h.start_date, h.end_date):
-            if d not in date_list:
-                date_list.append(d)
+    for d in holiday_list:
+        current_date = d.start_date
+        while current_date <= d.end_date:
+            if current_date not in date_list:
+                date_list.append(current_date)
+            current_date += timedelta(days=1)
 
-    
 
-    low_month = date_list[0].month
-    high_month = date_list[0].month
-    low_year = date_list[0].year
-    high_year = date_list[0].year
-
-    for d in date_list:
-        if d.month > high_month:
-            high_month = d.month
-        if d.month < low_month:
-            low_month = d.month
-        if d.year < low_year:
-            low_year = d.year
-        if d.year > high_year:
-            high_year = d.year
 
     for  d in date_list:
-        if d.month not in month_list:
-            month_list.append(d.month)
+        if d.strftime("%B") not in month_list:
+            month_list.append(d.strftime("%B"))
 
         if d.year not in year_list:
             year_list.append(d.year)
 
     year_list.sort()
 
-    month_table = {}
+    month30 = ["April", "June", "September", "November"]
+    month31 = ["January", "March", "May", "July", "August", "October", "December"]
+
+    holiday_table = {}
     
+    i = 1
     for y in year_list:
         for m in month_list:
-            
+            working_days = 0
+            holiday_c = 0
+            for h in date_list:
+                if m == h.strftime("%B") and y == h.year:
 
-   
+                    
+                    holiday_c = holiday_c + 1
+                    
+                    if m in month31:
+                        working_days = 31 - holiday_c
+                    elif m in month30:
+                        workng_days = 30 - holiday_c
+                    else:
+                        if calendar.isleap(y):
+                            working_days = 29 - holiday_c
 
+                        else:
+                            working_days = 28 - holiday_c
 
+                    holiday_table[i] = [i, m, y, holiday_c, working_days]
+                    i = i + 1
+
+    context = {
+        'holiday_table':holiday_table,
+    }
 
         
-    return render(request,'company/company_holiday.html')
+    return render(request,'company/company_holiday.html', context)
 
 
 def company_holiday_new(request):
