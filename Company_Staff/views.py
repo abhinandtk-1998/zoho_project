@@ -544,7 +544,7 @@ def company_holiday(request):
         if d.year not in year_list:
             year_list.append(d.year)
 
-    year_list.sort()
+    # year_list.sort()
 
     month30 = ["April", "June", "September", "November"]
     month31 = ["January", "March", "May", "July", "August", "October", "December"]
@@ -554,27 +554,29 @@ def company_holiday(request):
     i = 1
     for y in year_list:
         for m in month_list:
-            working_days = 0
             holiday_c = 0
+            st = 0
             for h in date_list:
                 if m == h.strftime("%B") and y == h.year:
-
-                    
                     holiday_c = holiday_c + 1
-                    
-                    if m in month31:
-                        working_days = 31 - holiday_c
-                    elif m in month30:
-                        workng_days = 30 - holiday_c
+                    st = 1
+
+            if st == 1:
+             
+                if m in month31:
+                    working_days = 31 - holiday_c
+                elif m in month30:
+                    workng_days = 30 - holiday_c
+                else:
+                    if calendar.isleap(y):
+                        working_days = 29 - holiday_c
+
                     else:
-                        if calendar.isleap(y):
-                            working_days = 29 - holiday_c
+                        working_days = 28 - holiday_c
 
-                        else:
-                            working_days = 28 - holiday_c
-
-                    holiday_table[i] = [i, m, y, holiday_c, working_days]
-                    i = i + 1
+                holiday_table[i] = [i, m, y, holiday_c, working_days]
+                i = i + 1
+                st = 0
 
     context = {
         'holiday_table':holiday_table,
@@ -602,6 +604,20 @@ def company_holiday_new_add(request):
         return redirect('company_holiday')
     
     return redirect('/')
+
+def company_holiday_overview(request):
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+
+    holiday_table = Holiday.objects.all()
+
+    
+
+    context = {
+        'holiday_table':holiday_table,
+    }
+
+    return render(request, 'company/company_holiday_overview.html',context)
 
     
 

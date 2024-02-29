@@ -7,6 +7,13 @@
     table tr td:hover {
     cursor: pointer;
   }
+
+  a{
+    color: white;
+  }
+  a:hover{
+    color:white;
+  }
 </style>
 
 <body>
@@ -22,7 +29,8 @@
         <div style="overflow-x:auto;"> 
           <h1 class="text-center text-white">ALL HOLIDAYS</h1>
           <input type="text" id="searchInput" placeholder="Search...">
-          <select id="sortSelect">
+          <label for="sortOption">Sort by:</label>
+          <select id="sortOption">
             <option value="all">All</option>
             <option value="month">Month</option>
             <option value="year">Year</option>
@@ -41,12 +49,15 @@
               </thead>
               <tbody>
                 {% for key, row in holiday_table.items %}
+                
                 <tr class="border-bottom border-dark">
-                  <td>{{ row.0 }}</td>
-                  <td>{{ row.1 }}</td>
-                  <td>{{ row.2 }}</td>
-                  <td>{{ row.3 }}</td>
-                  <td>{{ row.4 }}</td>
+                  <a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">
+                  <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.0 }}</a></td>
+                  <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.1 }}</a></td>
+                  <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.2 }}</a></td>
+                  <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.3 }}</a></td>
+                  <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.4 }}</a></td>
+                  </a>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -66,16 +77,21 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         let searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('keyup', function () {
+        let sortOption = document.getElementById('sortOption');
+        let tableBody = document.querySelector('tbody');
+        let rows = tableBody.getElementsByTagName('tr');
+
+        searchInput.addEventListener('keyup', filterRows);
+        sortOption.addEventListener('change', sortRows);
+
+        function filterRows() {
           let filter = searchInput.value.toUpperCase();
-          let tableBody = document.querySelector('tbody');
-          let rows = tableBody.getElementsByTagName('tr');
-    
+
           for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
             let cells = row.getElementsByTagName('td');
             let found = false;
-    
+
             for (let j = 0; j < cells.length; j++) {
               let cell = cells[j];
               if (cell) {
@@ -86,14 +102,43 @@
                 }
               }
             }
-    
+
             if (found) {
               row.style.display = '';
             } else {
               row.style.display = 'none';
             }
           }
-        });
+        }
+
+        function sortRows() {
+          let sortBy = sortOption.value;
+          let rowsArray = Array.from(rows);
+
+          rowsArray.sort(function(a, b) {
+            let aValue = a.cells[sortBy === 'all' ? 0 : sortBy === 'month' ? 1 : 2].innerText;
+            let bValue = b.cells[sortBy === 'all' ? 0 : sortBy === 'month' ? 1 : 2].innerText;
+
+            if (sortBy === 'month') {
+              aValue = getMonthIndex(aValue);
+              bValue = getMonthIndex(bValue);
+            } else if (sortBy === 'year') {
+              aValue = parseInt(aValue);
+              bValue = parseInt(bValue);
+            }
+
+            return aValue - bValue;
+          });
+
+          for (let i = 0; i < rowsArray.length; i++) {
+            tableBody.appendChild(rowsArray[i]);
+          }
+        }
+
+        function getMonthIndex(monthName) {
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+          return months.indexOf(monthName);
+        }
       });
     </script>
     

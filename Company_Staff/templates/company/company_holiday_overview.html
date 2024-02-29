@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    .container-flex {
+        display: flex;
+    }
+
+    .section {
+        flex: 1;
+        padding: 20px;
+    }
+
+    #section1 {
+        flex: 1; /* Adjusted width */
+    }
+
+    #section2 {
+        flex: 2; /* Adjusted width */
+    }
+</style>
+
+<body>
+    <div class="body-wrapper">
+        <div class="container-fluid container-flex">
+            <div style="overflow-x:auto;" class="section" id="section1">
+                <div class="table-responsive">
+                    <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+                        <thead>
+                            <tr class="border-bottom border-dark">
+                                <th scope="col"><b>Holiday</b></th>
+                                <th scope="col"><b>Start Date</b></th>
+                                <th scope="col"><b>End Date</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in holiday_table %}
+                            <tr class="border-bottom border-dark">
+                                <td>{{h.holiday_name}}</td>
+                                <td>{{h.start_date}}</td>
+                                <td>{{h.end_date}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table> 
+                </div>     
+            </div>
+            
+            <div class="section" id="section2">
+                <!-- <h1>Calendar</h1>
+                <h2>{{ month }}/{{ year }}</h2>
+                <table border="1">
+                    <tr>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                        <th>Thu</th>
+                        <th>Fri</th>
+                        <th>Sat</th>
+                        <th>Sun</th>
+                    </tr>
+                    {% for week in cal %}
+                        <tr>
+                            {% for day in week %}
+                                <td>{{ day }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table> -->
+                
+            </div>
+        </div>
+    </div>
+</body>
+
+
+{% endblock %}
