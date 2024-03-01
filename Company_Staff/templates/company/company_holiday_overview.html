@@ -29,17 +29,17 @@
                     <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
                         <thead>
                             <tr class="border-bottom border-dark">
-                                <th scope="col"><b>Holiday</b></th>
-                                <th scope="col"><b>Start Date</b></th>
-                                <th scope="col"><b>End Date</b></th>
+                                <th scope="col"><b>Month</b></th>
+                                <th scope="col"><b>Year</b></th>
+                                <th scope="col"><b>Holidays</b></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for h in holiday_table %}
+                            {% for key, row in holiday_table.items %}
                             <tr class="border-bottom border-dark">
-                                <td>{{h.holiday_name}}</td>
-                                <td>{{h.start_date}}</td>
-                                <td>{{h.end_date}}</td>
+                                <td>{{ row.1 }}</td>
+                                <td>{{ row.2 }}</td>
+                                <td>{{ row.3 }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -48,30 +48,193 @@
             </div>
             
             <div class="section" id="section2">
-                <!-- <h1>Calendar</h1>
-                <h2>{{ month }}/{{ year }}</h2>
-                <table border="1">
-                    <tr>
-                        <th>Mon</th>
-                        <th>Tue</th>
-                        <th>Wed</th>
-                        <th>Thu</th>
-                        <th>Fri</th>
-                        <th>Sat</th>
-                        <th>Sun</th>
-                    </tr>
-                    {% for week in cal %}
-                        <tr>
-                            {% for day in week %}
-                                <td>{{ day }}</td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </table> -->
+                <div class="row radius-15">
+                    <div id="calendarDiv" class="col"><center><h3><a href="" id="calendarLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Calendar</a></h3></center></div>
+                    <div id="holidayListDiv" class="col"><center><h3><a href="" id="holidayListLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Overview</a></h3></center></div>
+                </div>
+                <div class="card radius-15" style="background-color: rgba(0,0,0,0.1);">
+                    <div class="ml-auto"><a style="cursor: pointer;" title="Close" href="" ><i class="fa-solid fa-circle-xmark fa-2xl"></i></a></div>
+                    <div class="card-body">
+                        
+                        <div class="row" id="cal">
+                            <div class="col" id="calendar"></div>
+                        </div>
+                        
+                        <div class="row" id="cal_list">
+                            
+                            <div class="table-responsive">
+                                <!-- modal -->
+                                <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="exampleModalLabel">Leave a Comment</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+            
+                                        <form action="" method="post">
+                                            {% csrf_token %}
+                                        <div class="modal-body">
+                                          
+                                            <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                            <div style="text-align: left;">
+                                                {% if comments %}
+                                                <h5 class="pb-1 mb-3" style="text-decoration: underline;text-underline-offset: 10px;">Previous Comments</h5>
+                                                {% for i in comments %}
+                                                <label style="font-size: large;" for="">{{i.index}}. {{i.comment}}</label> <a href="{% url 'holiday_comment_delete' pk=i.id mn=i.month yr=i.year %}" id="deleteButton" style="color: crimson;"><i class="fa-solid fa-trash"></i></a><br>
+                                                {% endfor %}
+                                                {% else %}
+                                                <h5 class="pb-1 mb-2" >No Comments Yet</h5>
+                                                {% endif %}
+                                                
+                                            </div>
+                                          
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-secondary">Save changes</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        </div>
+                                        </form>
+            
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <!-- modal end -->
+            
+                                <br><br>
+                                <table class="table ml-3" style="background-color: rgb(0, 0, 0);color: white;" id="holidayList">
+                                    <center></center><br>
+                                    <thead class="thead"  >
+                                        <tr style="font-size: large; " >
+                                            <th>Sl No.</th>
+                                            <th>NAME</th>
+                                            <th>START DATE</th>
+                                            <th>END DATE</th>
+                                            <th>ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i in events %}
+                                        <tr style="font-size: large;">
+                                            <td>{{i.id}}</td>
+                                            <td style="text-transform: capitalize;">{{i.holiday_name}}</td>
+                                            <td>{{i.start_date}}</td>
+                                            <td>{{i.end_date}}</td>
+                                            <td ></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                        </div>
+                        
+                        
+                    </div>
+                
+                </div>
                 
             </div>
         </div>
     </div>
+
+
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    {% for i in events %}
+                    {   
+                        
+                        title: '{{i.holiday_name}}',
+                        start: '{{i.start_date|date:"c"}}',
+                        // Set allDay to true for one-day events
+                        allDay: true,
+                        // Extend the end date by one day
+                        end: new Date('{{i.end_date|date:"c"}}').getTime() + (1 * 24 * 60 * 60 * 1000),
+                        
+                        
+                    },
+                    {% endfor %}
+                ],
+                eventContent: function(arg) {
+                    // Customize the appearance of each event
+                    var eventElement = document.createElement('div');
+                    eventElement.innerHTML = arg.event.title;
+
+                    // Increase width and height
+                    eventElement.style.width = '120px'; // Adjust width as needed
+                    eventElement.style.height = '30px'; // Adjust height as needed
+
+                    // Add other style modifications as needed
+                    eventElement.style.fontSize = '20px'; // Adjust font size as needed
+                    eventElement.style.textTransform = 'capitalize'; // Capitalize the text
+                    eventElement.style.marginLeft = '10px'; // Margin left
+
+                    return { domNodes: [eventElement] };
+                },
+                
+            });
+
+            // Specify the year and month you want to open the calendar to
+            var yearToOpen = {{ year }};
+            var monthToOpen = {{ month }}; // (months are 0-indexed in JavaScript)
+
+            // Use gotoDate to open the calendar to the specified year and month
+            calendar.gotoDate(new Date(yearToOpen, monthToOpen));
+
+            
+            calendar.render();
+        });
+
+
+
+        // hide or show calendar
+
+
+      // Get references to the links and divs
+    var calendarLink = document.getElementById("calendarLink");
+    var holidayListLink = document.getElementById("holidayListLink");
+    var calendarDiv = document.getElementById("cal");
+    var holidayListDiv = document.getElementById("cal_list");
+    
+    holidayListDiv.style.display = "none"; // Hide the holiday list div
+    calendarLink.style.backgroundColor = '#213b52';
+
+    // Add click event listeners
+    calendarLink.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent the default behavior of the anchor tag
+        calendarDiv.style.display = "block"; // Show the calendar div
+        holidayListDiv.style.display = "none"; // Hide the holiday list div
+
+        // Add class to the selected div
+        calendarLink.style.backgroundColor = '#213b52';
+        holidayListLink.style.backgroundColor = 'transparent' ;
+            
+        
+        
+    });
+
+    holidayListLink.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent the default behavior of the anchor tag
+        calendarDiv.style.display = "none"; // Hide the calendar div
+        holidayListDiv.style.display = "block"; // Show the holiday list div
+
+        // Add class to the selected div
+
+        calendarLink.style.backgroundColor = 'transparent';
+        holidayListLink.style.backgroundColor = '#213b52' ;
+    });
+
+
+    </script>
 </body>
 
 

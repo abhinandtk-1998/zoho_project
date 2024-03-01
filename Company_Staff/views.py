@@ -606,15 +606,63 @@ def company_holiday_new_add(request):
     return redirect('/')
 
 def company_holiday_overview(request):
-    month = request.GET.get('month')
-    year = request.GET.get('year')
 
-    holiday_table = Holiday.objects.all()
+    mn = request.GET.get('month')
+    yr = request.GET.get('year')
+    month = datetime.strptime(mn, '%B').month
+    year = int(yr)
+
+    events = Holiday.objects.filter(start_date__month=month,start_date__year=year)
+
+    month_list = []
+    year_list = []
+    date_list = []
+    holiday_list = Holiday.objects.all()
+    for d in holiday_list:
+        current_date = d.start_date
+        while current_date <= d.end_date:
+            if current_date not in date_list:
+                date_list.append(current_date)
+            current_date += timedelta(days=1)
+
+
+
+    for  d in date_list:
+        if d.strftime("%B") not in month_list:
+            month_list.append(d.strftime("%B"))
+
+        if d.year not in year_list:
+            year_list.append(d.year)
+
+    # year_list.sort()
+
+    month30 = ["April", "June", "September", "November"]
+    month31 = ["January", "March", "May", "July", "August", "October", "December"]
+
+    holiday_table = {}
+    
+    i = 1
+    for y in year_list:
+        for m in month_list:
+            holiday_c = 0
+            st = 0
+            for h in date_list:
+                if m == h.strftime("%B") and y == h.year:
+                    holiday_c = holiday_c + 1
+                    st = 1
+
+            if st == 1:
+             
+
+                holiday_table[i] = [i, m, y, holiday_c]
+                i = i + 1
+                st = 0
 
     
 
     context = {
         'holiday_table':holiday_table,
+        'events':events,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
