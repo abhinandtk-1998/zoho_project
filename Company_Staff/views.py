@@ -634,10 +634,6 @@ def company_holiday_overview(request):
         if d.year not in year_list:
             year_list.append(d.year)
 
-    # year_list.sort()
-
-    month30 = ["April", "June", "September", "November"]
-    month31 = ["January", "March", "May", "July", "August", "October", "December"]
 
     holiday_table = {}
     
@@ -663,6 +659,8 @@ def company_holiday_overview(request):
     context = {
         'holiday_table':holiday_table,
         'events':events,
+        'month':month,
+        'year':year,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)

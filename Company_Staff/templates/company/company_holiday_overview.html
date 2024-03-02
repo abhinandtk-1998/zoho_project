@@ -2,6 +2,12 @@
 {% block content %}
 {% load static %}
 
+<!-- Include FullCalendar CSS -->
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<link rel="stylesheet" href="{% static 'assets/plugins/fullcalendar/css/main.min.css' %}">
+
+
 <style>
     .container-flex {
         display: flex;
@@ -37,9 +43,9 @@
                         <tbody>
                             {% for key, row in holiday_table.items %}
                             <tr class="border-bottom border-dark">
-                                <td>{{ row.1 }}</td>
-                                <td>{{ row.2 }}</td>
-                                <td>{{ row.3 }}</td>
+                                <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.1 }}</a></td>
+                                <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.2 }}</a></td>
+                                <td><a href="{% url 'company_holiday_overview' %}?month={{ row.1 }}&year={{ row.2}}">{{ row.3 }}</a></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -63,45 +69,6 @@
                         <div class="row" id="cal_list">
                             
                             <div class="table-responsive">
-                                <!-- modal -->
-                                <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                      <div class="modal-content">
-                                        <div class="modal-header">
-                                          <h5 class="modal-title" id="exampleModalLabel">Leave a Comment</h5>
-                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                          </button>
-                                        </div>
-            
-                                        <form action="" method="post">
-                                            {% csrf_token %}
-                                        <div class="modal-body">
-                                          
-                                            <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
-                                            <div style="text-align: left;">
-                                                {% if comments %}
-                                                <h5 class="pb-1 mb-3" style="text-decoration: underline;text-underline-offset: 10px;">Previous Comments</h5>
-                                                {% for i in comments %}
-                                                <label style="font-size: large;" for="">{{i.index}}. {{i.comment}}</label> <a href="{% url 'holiday_comment_delete' pk=i.id mn=i.month yr=i.year %}" id="deleteButton" style="color: crimson;"><i class="fa-solid fa-trash"></i></a><br>
-                                                {% endfor %}
-                                                {% else %}
-                                                <h5 class="pb-1 mb-2" >No Comments Yet</h5>
-                                                {% endif %}
-                                                
-                                            </div>
-                                          
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-secondary">Save changes</button>
-                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                        </div>
-                                        </form>
-            
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <!-- modal end -->
             
                                 <br><br>
                                 <table class="table ml-3" style="background-color: rgb(0, 0, 0);color: white;" id="holidayList">
@@ -143,49 +110,33 @@
 
 
 
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
+
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: [
-                    {% for i in events %}
-                    {   
-                        
-                        title: '{{i.holiday_name}}',
-                        start: '{{i.start_date|date:"c"}}',
-                        // Set allDay to true for one-day events
-                        allDay: true,
-                        // Extend the end date by one day
-                        end: new Date('{{i.end_date|date:"c"}}').getTime() + (1 * 24 * 60 * 60 * 1000),
-                        
-                        
-                    },
-                    {% endfor %}
-                ],
-                eventContent: function(arg) {
-                    // Customize the appearance of each event
-                    var eventElement = document.createElement('div');
-                    eventElement.innerHTML = arg.event.title;
-
-                    // Increase width and height
-                    eventElement.style.width = '120px'; // Adjust width as needed
-                    eventElement.style.height = '30px'; // Adjust height as needed
-
-                    // Add other style modifications as needed
-                    eventElement.style.fontSize = '20px'; // Adjust font size as needed
-                    eventElement.style.textTransform = 'capitalize'; // Capitalize the text
-                    eventElement.style.marginLeft = '10px'; // Margin left
-
-                    return { domNodes: [eventElement] };
-                },
-                
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: [
+                // Loop through events passed from Django view and format them appropriately
+                {% for event in events %}
+                {
+                    title: '{{ event.title }}',
+                    start: '{{ event.start_date|date:"Y-m-d" }}', // Format start date
+                    end: '{{ event.end_date|date:"Y-m-d" }}' // Format end date if available
+                }
+                {% if not forloop.last %},{% endif %} // Add comma except for the last event
+                {% endfor %}
+            ]
             });
 
-            // Specify the year and month you want to open the calendar to
-            var yearToOpen = {{ year }};
-            var monthToOpen = {{ month }}; // (months are 0-indexed in JavaScript)
+             // Specify the year and month you want to open the calendar to
+             var yearToOpen = {{ year }};
+            var monthToOpen = {{ month }}-1; // (months are 0-indexed in JavaScript)
 
             // Use gotoDate to open the calendar to the specified year and month
             calendar.gotoDate(new Date(yearToOpen, monthToOpen));
@@ -199,27 +150,29 @@
         // hide or show calendar
 
 
-      // Get references to the links and divs
+        document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the links and divs
     var calendarLink = document.getElementById("calendarLink");
     var holidayListLink = document.getElementById("holidayListLink");
     var calendarDiv = document.getElementById("cal");
     var holidayListDiv = document.getElementById("cal_list");
     
-    holidayListDiv.style.display = "none"; // Hide the holiday list div
-    calendarLink.style.backgroundColor = '#213b52';
-
+    // Hide the holiday list div initially
+    holidayListDiv.style.display = "none";
+    
     // Add click event listeners
     calendarLink.addEventListener("click", function (event) {
         event.preventDefault(); // Prevent the default behavior of the anchor tag
         calendarDiv.style.display = "block"; // Show the calendar div
         holidayListDiv.style.display = "none"; // Hide the holiday list div
 
+        // Optionally, add/remove classes for styling
+        calendarLink.classList.add("active");
+        holidayListLink.classList.remove("active");
+
         // Add class to the selected div
         calendarLink.style.backgroundColor = '#213b52';
         holidayListLink.style.backgroundColor = 'transparent' ;
-            
-        
-        
     });
 
     holidayListLink.addEventListener("click", function (event) {
@@ -227,11 +180,15 @@
         calendarDiv.style.display = "none"; // Hide the calendar div
         holidayListDiv.style.display = "block"; // Show the holiday list div
 
-        // Add class to the selected div
+        // Optionally, add/remove classes for styling
+        calendarLink.classList.remove("active");
+        holidayListLink.classList.add("active");
 
+         // Add class to the selected div
         calendarLink.style.backgroundColor = 'transparent';
         holidayListLink.style.backgroundColor = '#213b52' ;
     });
+});
 
 
     </script>
