@@ -566,7 +566,7 @@ def company_holiday(request):
                 if m in month31:
                     working_days = 31 - holiday_c
                 elif m in month30:
-                    workng_days = 30 - holiday_c
+                    working_days = 30 - holiday_c
                 else:
                     if calendar.isleap(y):
                         working_days = 29 - holiday_c
@@ -605,10 +605,50 @@ def company_holiday_new_add(request):
     
     return redirect('/')
 
+
+def company_holiday_import(request):
+    return render(request, 'company/company_holiday_import.html')
+
+def company_holiday_import_operation(request):
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    if request.method == 'POST' and request.FILES['file']:
+        excel_file = request.FILES['file']
+
+        # Check if the uploaded file is an Excel file
+        if excel_file.name.endswith('.xls') or excel_file.name.endswith('.xlsx'):
+            # Load Excel file into pandas DataFrame
+            df = pd.read_excel(excel_file)
+
+            # Iterate through rows and save data to database
+            for index, row in df.iterrows():
+                # Create a new object of YourModel and populate fields
+                obj = Holiday(
+                    holiday_name=row['title'],
+                    start_date=row['s_date'],
+                    end_date=row['e_date'],
+                    user=login_d,
+                    company=company_id,
+                )
+                obj.save()
+
+            # Redirect to a success page or render a success message
+            return redirect('company_holiday')
+
+    # Render the upload form
+    return redirect('company_holiday_import')
+
 def company_holiday_overview(request):
 
     mn = request.GET.get('month')
     yr = request.GET.get('year')
+
+    if mn is None:
+        mn = "January"
+    if yr is None:
+        yr = 2024
+
     month = datetime.strptime(mn, '%B').month
     year = int(yr)
 
@@ -664,6 +704,19 @@ def company_holiday_overview(request):
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
+
+
+def company_holiday_overview_delete(request,pk):
+
+    h1 = Holiday.objects.get(id=pk)
+    date1 = h1.start_date
+
+    year = date1.year
+    month = date1.strftime("%B")
+
+    h1.delete()
+    
+    return redirect('company_holiday_overview'.format(month, year))
 
     
 

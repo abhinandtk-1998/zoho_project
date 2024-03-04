@@ -32,7 +32,7 @@
         <div class="container-fluid container-flex">
             <div style="overflow-x:auto;" class="section" id="section1">
                 <div class="table-responsive">
-                    <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+                    <table id="holidayTable"  class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
                         <thead>
                             <tr class="border-bottom border-dark">
                                 <th scope="col"><b>Month</b></th>
@@ -89,7 +89,7 @@
                                             <td style="text-transform: capitalize;">{{i.holiday_name}}</td>
                                             <td>{{i.start_date}}</td>
                                             <td>{{i.end_date}}</td>
-                                            <td ></td>
+                                            <td><a href="{% url 'company_holiday_overview_delete' i.id %}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -125,7 +125,7 @@
                 // Loop through events passed from Django view and format them appropriately
                 {% for event in events %}
                 {
-                    title: '{{ event.title }}',
+                    title: '{{ event.holiday_name }}',
                     start: '{{ event.start_date|date:"Y-m-d" }}', // Format start date
                     end: '{{ event.end_date|date:"Y-m-d" }}' // Format end date if available
                 }
@@ -145,6 +145,7 @@
             calendar.render();
         });
 
+    
 
 
         // hide or show calendar

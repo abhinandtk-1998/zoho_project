@@ -28,16 +28,18 @@
         </nav>
         <div style="overflow-x:auto;"> 
           <h1 class="text-center text-white">ALL HOLIDAYS</h1>
-          <input type="text" id="searchInput" placeholder="Search...">
-          <label for="sortOption">Sort by:</label>
-          <select id="sortOption">
-            <option value="all">All</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
-          </select>
-          <a href="{% url 'company_holiday_new' %}"><i class="fa fa-plus text-yellow" ></i>New</a>
           <div class="table-responsive">
-            <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <label for="sortOption">Sort by:</label>
+            <select id="sortOption">
+              <option value="all">All</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </select>
+            <button onclick="exportToExcel()" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-arrow-up"></i>Export</button>
+            <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-arrow-down"></i> Import </a>
+            <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-plus text-yellow" ></i>New</a>
+            <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
               <thead>
                 <tr class="border-bottom border-dark">
                   <th scope="col" ><b>Sl no.</b></th>
@@ -140,6 +142,36 @@
           return months.indexOf(monthName);
         }
       });
+
+
+      function exportToExcel() {
+        const table = document.getElementById("myTable");
+        const rows = table.querySelectorAll("tr");
+        let csvContent = "data:text/csv;charset=utf-8,";
+
+        // Include table headers
+        const headers = [];
+        table.querySelectorAll("th").forEach(function(header) {
+          headers.push(header.innerText);
+        });
+        csvContent += headers.join(",") + "\n";
+
+        // Include table data
+        rows.forEach(function(row) {
+          const rowData = [];
+          row.querySelectorAll("td").forEach(function(cell) {
+            rowData.push(cell.innerText);
+          });
+          csvContent += rowData.join(",") + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "table_data.csv");
+        document.body.appendChild(link);
+        link.click();
+      }
     </script>
     
   </body>
