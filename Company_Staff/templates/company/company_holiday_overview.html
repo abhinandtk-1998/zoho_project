@@ -8,6 +8,15 @@
 <link rel="stylesheet" href="{% static 'assets/plugins/fullcalendar/css/main.min.css' %}">
 
 
+<!-- pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<!-- Add html2pdf library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+
+
+
 <style>
     .container-flex {
         display: flex;
@@ -25,13 +34,37 @@
     #section2 {
         flex: 2; /* Adjusted width */
     }
+
+    @media print {
+    /* Hide the table when printing */
+    #holidayList {
+        display: none;
+        }
+    }
 </style>
 
 <body>
     <div class="body-wrapper">
         <div class="container-fluid container-flex">
             <div style="overflow-x:auto;" class="section" id="section1">
+                <h1 class="text-center text-white">All Holidays</h1>
                 <div class="table-responsive">
+                    <div class="mb-3">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Type to search">
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle text-grey" type="button" id="sortButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-sort"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="sortButton">
+                                <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
+                                <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
+                                <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
+                            </ul>
+                        </div>
+                        <a href="{% url 'company_holiday_new' %}?n=1" class="btn btn-outline-secondary text-grey ms-auto"><i class="fa fa-plus text-yellow"></i> New Holiday</a>
+                    </div>
                     <table id="holidayTable"  class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
                         <thead>
                             <tr class="border-bottom border-dark">
@@ -69,9 +102,53 @@
                         <div class="row" id="cal_list">
                             
                             <div class="table-responsive">
-            
-                                <br><br>
-                                <table class="table ml-3" style="background-color: rgb(0, 0, 0);color: white;" id="holidayList">
+                                <a href="" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-share"></i>Share</a>
+                                <button class="btn btn-outline-secondary mb-2 text-grey" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
+                                <button class="btn btn-outline-secondary mb-2 text-grey" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
+                                <a href="" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-comment"></i>Comment</a>
+                                <button class="btn btn-outline-secondary mb-2 text-grey" type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i> Comment</button>
+
+                                <!-- modal -->
+                                <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Leave a Comment</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                        </div>
+
+                                        <form action="" method="post">
+                                            {% csrf_token %}
+                                        <div class="modal-body">
+                                        
+                                            <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                            <div style="text-align: left;">
+                                                {% if comments %}
+                                                <h5 class="pb-1 mb-3" style="text-decoration: underline;text-underline-offset: 10px;">Previous Comments</h5>
+                                                {% for i in comments %}
+                                                <label style="font-size: large;" for="">{{i.index}}. {{i.comment}}</label> <a href="{% url 'holiday_comment_delete' pk=i.id mn=i.month yr=i.year %}" id="deleteButton" style="color: crimson;"><i class="fa-solid fa-trash"></i></a><br>
+                                                {% endfor %}
+                                                {% else %}
+                                                <h5 class="pb-1 mb-2" >No Comments Yet</h5>
+                                                {% endif %}
+                                                
+                                            </div>
+                                        
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-secondary">Save changes</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        </div>
+                                        </form>
+
+                                    </div>
+                                    </div>
+                                </div>
+                                <!-- modal end -->
+        
+                                <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;" id="holidayList">
                                     <center></center><br>
                                     <thead class="thead"  >
                                         <tr style="font-size: large; " >
@@ -89,13 +166,13 @@
                                             <td style="text-transform: capitalize;">{{i.holiday_name}}</td>
                                             <td>{{i.start_date}}</td>
                                             <td>{{i.end_date}}</td>
-                                            <td><a href="{% url 'company_holiday_overview_delete' i.id %}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{% url 'company_holiday_overview_delete' i.id %}"><i class="fa fa-trash"></i></a> 
+                                            <a href="{% url 'company_holiday_overview_edit' i.id %}"><i class="fa fa-edit"></i></a></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                            
                         </div>
                         
                         
@@ -190,6 +267,225 @@
         holidayListLink.style.backgroundColor = '#213b52' ;
     });
 });
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+        // Get the input element and table
+        var searchInput = document.getElementById('searchInput');
+        var holidayTable = document.getElementById('holidayTable');
+
+        // Add event listener for input changes
+        searchInput.addEventListener('input', function () {
+            var filter = searchInput.value.toLowerCase();
+            var rows = holidayTable.getElementsByTagName('tr');
+
+            // Loop through all table rows and hide/show based on search input
+            for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+                var row = rows[i];
+                var columns = row.getElementsByTagName('td');
+                var shouldShow = false;
+
+                for (var j = 0; j < columns.length; j++) {
+                    var cellValue = columns[j].textContent.toLowerCase();
+                    if (cellValue.indexOf(filter) > -1) {
+                        shouldShow = true;
+                        break;
+                    }
+                }
+
+                // Hide or show the row based on the search result
+                row.style.display = shouldShow ? '' : 'none';
+            }
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get the sort button, dropdown menu, and table
+        var sortButton = document.getElementById('sortButton');
+        var sortDropdown = document.querySelector('.dropdown-menu');
+        var holidayTable = document.getElementById('holidayTable').getElementsByTagName('tbody')[0];
+        var rows = holidayTable.getElementsByTagName('tr');
+
+        // Define an object mapping month names to their numerical order
+        var monthOrder = {
+            'January': 1,
+            'February': 2,
+            'March': 3,
+            'April': 4,
+            'May': 5,
+            'June': 6,
+            'July': 7,
+            'August': 8,
+            'September': 9,
+            'October': 10,
+            'November': 11,
+            'December': 12
+        };
+
+        // Add event listener for sort button click
+        sortButton.addEventListener('click', function (event) {
+            event.stopPropagation(); // Prevents the document click event from closing the dropdown
+            // Toggle visibility of the dropdown menu
+            sortDropdown.classList.toggle('show');
+        });
+
+        // Add event listener to close the dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!sortButton.contains(event.target)) {
+                sortDropdown.classList.remove('show');
+            }
+        });
+
+        // Add event listener for dropdown item click
+        var dropdownItems = document.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(function (item) {
+            item.addEventListener('click', function (event) {
+                event.preventDefault();
+                var sortValue = item.getAttribute('data-sort');
+                sortTable(sortValue);
+                // Close the dropdown menu
+                sortDropdown.classList.remove('show');
+            });
+        });
+
+        // Function to sort table rows based on selected option
+        function sortTable(sortValue) {
+            // Sort the table rows based on the selected option
+            if (sortValue === 'month') {
+                sortTableByMonth();
+            } else if (sortValue === 'year') {
+                sortTableByColumn(2); // Sort by year (column index 2)
+            } else {
+                // Reset the table to its original order
+                for (var i = 0; i < rows.length; i++) {
+                    holidayTable.appendChild(rows[i]);
+                }
+            }
+        }
+
+        // Function to sort table rows by month
+        function sortTableByMonth() {
+            // Convert HTMLCollection to Array for sorting
+            var rowsArray = Array.prototype.slice.call(rows);
+            
+            // Sort the rows based on the numerical order of months
+            rowsArray.sort(function (a, b) {
+                var monthA = a.getElementsByTagName('td')[0].textContent.trim();
+                var monthB = b.getElementsByTagName('td')[0].textContent.trim();
+                return monthOrder[monthA] - monthOrder[monthB];
+            });
+
+            // Re-append sorted rows to the table
+            for (var i = 0; i < rowsArray.length; i++) {
+                holidayTable.appendChild(rowsArray[i]);
+            }
+        }
+    });
+
+
+
+
+    // pdf
+
+function ExportAsPDF() {
+    console.log("Exporting as PDF...");
+    const container = document.getElementById('holidayList');
+
+    // Save the original styles
+    const originalStyles = {
+        backgroundColor: container.style.backgroundColor,
+        color: container.style.color,
+    };
+
+    // Set the container's background color to white and text color to black for specific columns
+    const headerCells = container.querySelectorAll('thead th');
+    const dataCells = container.querySelectorAll('tbody td');
+
+    headerCells.forEach(cell => {
+        cell.style.backgroundColor = 'white';
+        cell.style.color = 'black';
+    });
+
+    dataCells.forEach(cell => {
+        cell.style.backgroundColor = 'white';
+        cell.style.color = 'black';
+    });
+
+    // Identify and hide the last column from the HTML content
+    const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
+    Array.from(container.rows).forEach(row => {
+        row.cells[lastColumnIndex].style.display = 'none';
+    });
+
+    // Add margin to the PDF
+    const margin = 10; // Adjust as needed
+    const pdfOptions = {
+        margin: [margin, margin, margin, margin], // top, right, bottom, left
+        filename: "profile.pdf",
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
+    };
+
+    // Generate PDF from the modified container
+    html2pdf().from(container).set(pdfOptions).save().then(() => {
+        // Display the last column again after downloading the PDF
+        Array.from(container.rows).forEach(row => {
+            row.cells[lastColumnIndex].style.display = '';
+        });
+
+        // Restore the original styles for specific columns
+        headerCells.forEach(cell => {
+            cell.style.backgroundColor = '';
+            cell.style.color = originalStyles.color;
+        });
+
+        dataCells.forEach(cell => {
+            cell.style.backgroundColor = '';
+            cell.style.color = originalStyles.color;
+        });
+
+        // Restore the original styles for the container
+        container.style.backgroundColor = originalStyles.backgroundColor;
+        container.style.color = originalStyles.color;
+    });
+}
+
+
+
+// print
+
+
+function PrintTable() {
+    const container = document.getElementById('holidayList');
+    const heading = document.querySelector('.container-flex h1');
+
+    // Create a new window
+    const printWindow = window.open('', '_blank');
+
+    // Write HTML content to the new window
+    printWindow.document.write('<html><head><title>Print</title>');
+    printWindow.document.write('</head><body>');
+
+    // Copy the heading content
+    printWindow.document.write('<h1 style="text-align: center;">All Holidays</h1>');
+
+    // Copy the table content
+    printWindow.document.write(container.outerHTML);
+
+    // Close the HTML content
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+
+    // Print the new window
+    printWindow.print();
+}
+
+
 
 
     </script>

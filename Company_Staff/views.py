@@ -718,6 +718,41 @@ def company_holiday_overview_delete(request,pk):
     
     return redirect('company_holiday_overview'.format(month, year))
 
+
+def company_holiday_overview_edit(request,pk):
+
+    h1 = Holiday.objects.get(id=pk)
+    context = {
+        'id':pk,
+        'holiday':h1,
+    }
+    return render(request, 'company/company_holiday_overview_edit.html',context)
+
+def company_holiday_overview_edit_op(request,pk):
+    if request.method=="POST":
+        title=request.POST['title']
+        s_date=request.POST['sdate']
+        e_date=request.POST['edate']
+
+        holiday_d = Holiday.objects.get(id=pk)
+        date1 = holiday_d.start_date
+        holiday_d.holiday_name = title
+        holiday_d.start_date = s_date
+        holiday_d.end_date = e_date
+
+        year = date1.year
+        month = date1.strftime("%B")
+
+        holiday_d.save()
+
+        
+        return redirect('company_holiday_overview'.format(month, year))
+    
+    return redirect('/')
+
+
+
+
     
 
 
