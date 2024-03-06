@@ -750,6 +750,19 @@ def company_holiday_overview_edit_op(request,pk):
     
     return redirect('/')
 
+def company_holiday_overview_send_email(request,pk):
+    if request.method=="POST":
+        email=request.POST['email']
+
+
+        subject="Application for Freelancer Registration Received"
+        message="Hai " + uname + ", Please wait for admin approval"
+        recipient=eaddress
+
+        send_mail(subject, message, settings.EMAIL_HOST_USER,[recipient])
+        messages.info(request, 'Please wait for admin approval')
+
+
 
 
 

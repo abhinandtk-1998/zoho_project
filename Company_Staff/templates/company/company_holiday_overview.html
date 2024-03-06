@@ -14,6 +14,12 @@
 <!-- Add html2pdf library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
+<!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Include jQuery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 
 
 
@@ -41,6 +47,25 @@
         display: none;
         }
     }
+
+    a{
+        color:white;
+    }
+    a:hover{
+        color:white;
+    }
+
+    .modal-content {
+        background-color: rgb(41, 37, 37);/* Modal content background color */
+        width: 80%; /* Adjust width as needed */
+        max-width: 600px; /* Maximum width */
+        margin: 20px auto; /* Center modal horizontally */
+        padding: 20px;
+        color: white;
+    }
+
+
+    
 </style>
 
 <body>
@@ -88,8 +113,8 @@
             
             <div class="section" id="section2">
                 <div class="row radius-15">
-                    <div id="calendarDiv" class="col"><center><h3><a href="" id="calendarLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Calendar</a></h3></center></div>
-                    <div id="holidayListDiv" class="col"><center><h3><a href="" id="holidayListLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Overview</a></h3></center></div>
+                    <div id="calendarDiv" class="col"><h3 class="text-center"><a href="" id="calendarLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Calendar</a></h3></div>
+                    <div id="holidayListDiv" class="col"><h3 class="text-center"><a href="" id="holidayListLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Overview</a></h3></div>
                 </div>
                 <div class="card radius-15" style="background-color: rgba(0,0,0,0.1);">
                     <div class="ml-auto"><a style="cursor: pointer;" title="Close" href="" ><i class="fa-solid fa-circle-xmark fa-2xl"></i></a></div>
@@ -102,18 +127,68 @@
                         <div class="row" id="cal_list">
                             
                             <div class="table-responsive">
-                                <a href="" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-share"></i>Share</a>
-                                <button class="btn btn-outline-secondary mb-2 text-grey" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
-                                <button class="btn btn-outline-secondary mb-2 text-grey" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
-                                <a href="" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-comment"></i>Comment</a>
-                                <button class="btn btn-outline-secondary mb-2 text-grey" type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i> Comment</button>
+                                <div class="mb-3 d-flex align-items-center">
+                                    <div class="dropdown me-3">
+                                        <button class="btn btn-outline-secondary dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa fa-share"></i>Share
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="shareButton">
+                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#WhatsappModal">Whatsapp</a></li>
+                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
+                                        </ul>
+                                    </div>
+                                    <button class="btn btn-outline-secondary text-grey" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
+                                    <button class="btn btn-outline-secondary text-grey" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
+                                    <button class="btn btn-outline-secondary text-grey" type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i> Comment</button>
+                                </div>
 
-                                <!-- modal -->
+                                <!-- WhatsApp Modal -->
+                                <div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="whatsappModalLabel">Share via WhatsApp</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <!-- WhatsApp share content -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Email Modal -->
+                                <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="emailModalLabel" style="color: white;">Share via Email</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="" method="post">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="exampleInputEmail1">Email address</label>
+                                                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">Share</button>
+
+
+                                                </form>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+
+                                <!-- Comment modal -->
                                 <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Leave a Comment</h5>
+                                        <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -122,23 +197,11 @@
                                         <form action="" method="post">
                                             {% csrf_token %}
                                         <div class="modal-body">
-                                        
                                             <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
-                                            <div style="text-align: left;">
-                                                {% if comments %}
-                                                <h5 class="pb-1 mb-3" style="text-decoration: underline;text-underline-offset: 10px;">Previous Comments</h5>
-                                                {% for i in comments %}
-                                                <label style="font-size: large;" for="">{{i.index}}. {{i.comment}}</label> <a href="{% url 'holiday_comment_delete' pk=i.id mn=i.month yr=i.year %}" id="deleteButton" style="color: crimson;"><i class="fa-solid fa-trash"></i></a><br>
-                                                {% endfor %}
-                                                {% else %}
-                                                <h5 class="pb-1 mb-2" >No Comments Yet</h5>
-                                                {% endif %}
-                                                
-                                            </div>
                                         
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="submit" class="btn btn-secondary">Save changes</button>
+                                            <button type="submit" class="btn btn-secondary">Save</button>
                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                                         </div>
                                         </form>
@@ -148,7 +211,7 @@
                                 </div>
                                 <!-- modal end -->
         
-                                <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;" id="holidayList">
+                                <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
                                     <center></center><br>
                                     <thead class="thead"  >
                                         <tr style="font-size: large; " >
@@ -166,8 +229,8 @@
                                             <td style="text-transform: capitalize;">{{i.holiday_name}}</td>
                                             <td>{{i.start_date}}</td>
                                             <td>{{i.end_date}}</td>
-                                            <td><a href="{% url 'company_holiday_overview_delete' i.id %}"><i class="fa fa-trash"></i></a> 
-                                            <a href="{% url 'company_holiday_overview_edit' i.id %}"><i class="fa fa-edit"></i></a></td>
+                                            <td><a href="{% url 'company_holiday_overview_delete' i.id %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
+                                            <a href="{% url 'company_holiday_overview_edit' i.id %}" style="color:yellow"><i class="fa fa-edit"></i></a></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -486,6 +549,18 @@ function PrintTable() {
 }
 
 
+
+document.addEventListener("DOMContentLoaded", function() {
+    const shareOptions = document.querySelectorAll('.share-option');
+  
+    shareOptions.forEach(function(option) {
+        option.addEventListener('click', function(event) {
+            event.preventDefault();
+            const targetModal = document.querySelector(this.getAttribute('data-target'));
+            $(targetModal).modal('show'); // Using jQuery for Bootstrap modal
+        });
+    });
+});
 
 
     </script>
