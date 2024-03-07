@@ -37,7 +37,8 @@ urlpatterns = [
     path('Company/Payroll/Holiday/Overview_delete/<int:pk>',views.company_holiday_overview_delete,name='company_holiday_overview_delete'),
     path('Company/Payroll/Holiday/Overview_edit/<int:pk>',views.company_holiday_overview_edit,name='company_holiday_overview_edit'),
     path('Company/Payroll/Holiday/Overview_edit_op/<int:pk>',views.company_holiday_overview_edit_op,name='company_holiday_overview_edit_op'),
-    path('Company/Payroll/Holiday/Overview_send_email',views.company_holiday_overview_send_email,name='company_holiday_overview_send_email'),
+    path('Company/Payroll/Holiday/Overview_comment/<int:pk>',views.company_holiday_overview_comment,name='company_holiday_overview_comment'),
+    # path('Company/Payroll/Holiday/Overview_send_email',views.company_holiday_overview_send_email,name='company_holiday_overview_send_email'),
 
 
 

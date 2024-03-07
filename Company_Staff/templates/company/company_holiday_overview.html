@@ -133,13 +133,13 @@
                                             <i class="fa fa-share"></i>Share
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="shareButton">
-                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#WhatsappModal">Whatsapp</a></li>
+                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#w
+                                                hatsappModal">Whatsapp</a></li>
                                             <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                         </ul>
                                     </div>
                                     <button class="btn btn-outline-secondary text-grey" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
                                     <button class="btn btn-outline-secondary text-grey" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
-                                    <button class="btn btn-outline-secondary text-grey" type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i> Comment</button>
                                 </div>
 
                                 <!-- WhatsApp Modal -->
@@ -151,7 +151,14 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <!-- WhatsApp share content -->
+                                                <form action="" method="post">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="exampleInputEmail1">Whatsapp Number</label>
+                                                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">Share</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -173,8 +180,6 @@
                                                         <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">Share</button>
-
-
                                                 </form>
                                                 
                                             </div>
@@ -183,33 +188,7 @@
                                 </div>
                                 
 
-                                <!-- Comment modal -->
-                                <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                        <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        </div>
-
-                                        <form action="" method="post">
-                                            {% csrf_token %}
-                                        <div class="modal-body">
-                                            <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
-                                        
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-secondary">Save</button>
-                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                        </div>
-                                        </form>
-
-                                    </div>
-                                    </div>
-                                </div>
-                                <!-- modal end -->
+                                
         
                                 <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
                                     <center></center><br>
@@ -230,7 +209,59 @@
                                             <td>{{i.start_date}}</td>
                                             <td>{{i.end_date}}</td>
                                             <td><a href="{% url 'company_holiday_overview_delete' i.id %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
-                                            <a href="{% url 'company_holiday_overview_edit' i.id %}" style="color:yellow"><i class="fa fa-edit"></i></a></td>
+                                            <a href="{% url 'company_holiday_overview_edit' i.id %}" style="color:yellow"><i class="fa fa-edit"></i></a>
+                                            <button type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i></button>
+                                            <!-- Comment modal -->
+                                            <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                    <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        {% if comments is not None %}
+                                                        <table  class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+                                                            <thead>
+                                                                <tr class="border-bottom border-dark">
+                                                                    <th scope="col"><b>Sl.No</b></th>
+                                                                    <th scope="col"><b>Comment</b></th>
+                                                                    <th scope="col"><b>Action</b></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for c in comments %}
+                                                                <tr class="border-bottom border-dark">
+                                                                    <td>c.id</td>
+                                                                    <td>c.comment</td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table> 
+                                                    </div> 
+                                                    
+
+                                                    <form action="{% url 'company_holiday_overview_comment' i.id %}" method="post">
+                                                        {% csrf_token %}
+                                                    <div class="modal-body">
+                                                        <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                                    
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-secondary">Save</button>
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                    </form>
+
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <!-- modal end -->
+                                            </td>
+                                            
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -561,6 +592,39 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+
+
+
+
+// Function to send PDF via AJAX
+// function sendPDFByEmail(email) {
+
+//     // Get the generated PDF file
+//     const pdfFile = ExportAsPDF();
+
+//     // Prepare data to send via AJAX
+//     const formData = new FormData();
+//     formData.append('email', email);
+//     formData.append('pdf_file', pdfFile);
+
+//     // Send AJAX request
+//     $.ajax({
+//         url:'',
+//         type: 'POST',
+//         data: formData,
+//         processData: false,
+//         contentType: false,
+//         success: function(response) {
+//             // Handle success
+//             console.log('Email sent successfully');
+//         },
+//         error: function(xhr, status, error) {
+//             // Handle error
+//             console.error('Error sending email:', error);
+//         }
+//     });
+// }
 
 
     </script>

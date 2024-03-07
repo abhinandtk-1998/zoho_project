@@ -25,6 +25,9 @@ from django.db.models import Max
 from django.db.models import Q
 from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
 import calendar
+from django.template.loader import render_to_string
+# from django.views import View
+# from weasyprint import HTML
 
 # Create your views here.
 
@@ -694,6 +697,12 @@ def company_holiday_overview(request):
                 i = i + 1
                 st = 0
 
+
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
+
     
 
     context = {
@@ -701,6 +710,7 @@ def company_holiday_overview(request):
         'events':events,
         'month':month,
         'year':year,
+        'comments':comment
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
@@ -750,17 +760,57 @@ def company_holiday_overview_edit_op(request,pk):
     
     return redirect('/')
 
-def company_holiday_overview_send_email(request,pk):
-    if request.method=="POST":
-        email=request.POST['email']
+def company_holiday_overview_comment(request,pk):
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    if request.method=='POST':
+        comment=request.POST['comment']
+
+        holiday = Holiday.objects.get(id=pk)
+
+        c1 = Comment_holiday(holiday_details=holiday, comment=comment, user=login_d, company=company_id)
+        c1.save()
+
+        return redirect('company_holiday_overview')
+    
+    return redirect('company_holiday_overview')
+        
 
 
-        subject="Application for Freelancer Registration Received"
-        message="Hai " + uname + ", Please wait for admin approval"
-        recipient=eaddress
+# def company_holiday_overview_send_email(request,pk):
+#     if request.method=="POST":
+#         email=request.POST['email']
 
-        send_mail(subject, message, settings.EMAIL_HOST_USER,[recipient])
-        messages.info(request, 'Please wait for admin approval')
+
+#         subject="Application for Freelancer Registration Received"
+#         message="Hai " + uname + ", Please wait for admin approval"
+#         recipient=eaddress
+
+#         send_mail(subject, message, settings.EMAIL_HOST_USER,[recipient])
+#         messages.info(request, 'Please wait for admin approval')
+
+
+#          # Generate PDF from HTML table
+#         html_table = render_to_string('company/company_holiday_overview.html', {'data': events})
+#         pdf_file = HTML(string=html_table).write_pdf()
+
+#         # Send email with PDF attachment
+#         email_subject = 'Subject for your email'
+#         email_body = 'Body for your email'
+
+#         message = EmailMessage(
+#             email_subject,
+#             email_body,
+#             'your_email@gmail.com',  # Sender's email address
+#             [email],  # Recipient's email address
+#             ['your_email@gmail.com'],  # Additional email addresses (if needed)
+#         )
+
+#         message.attach('table_data.pdf', pdf_file, 'application/pdf')
+#         message.send()
+
+#         return HttpResponse("Email sent successfully")
 
 
 
