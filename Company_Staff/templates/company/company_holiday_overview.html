@@ -133,8 +133,7 @@
                                             <i class="fa fa-share"></i>Share
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="shareButton">
-                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#w
-                                                hatsappModal">Whatsapp</a></li>
+                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#whatsappModal">Whatsapp</a></li>
                                             <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                         </ul>
                                     </div>
@@ -173,11 +172,11 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <form action="" method="post">
+                                                <form onsubmit="return SendAsPDF()" method="post">
                                                     {% csrf_token %}
                                                     <div class="form-group">
                                                         <label for="exampleInputEmail1">Email address</label>
-                                                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                                                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">Share</button>
                                                 </form>
@@ -223,7 +222,7 @@
                                                     </div>
                                                     <div class="table-responsive">
                                                         {% if comments is not None %}
-                                                        <table  class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
+                                                        <table  class="table mt-lg-5 mt-2 rounded" style="color: white;">
                                                             <thead>
                                                                 <tr class="border-bottom border-dark">
                                                                     <th scope="col"><b>Sl.No</b></th>
@@ -234,13 +233,16 @@
                                                             <tbody>
                                                                 {% for c in comments %}
                                                                 <tr class="border-bottom border-dark">
-                                                                    <td>c.id</td>
-                                                                    <td>c.comment</td>
-                                                                    <td></td>
+                                                                    <td>{{c.id}}</td>
+                                                                    <td>{{c.comment}}</td>
+                                                                    <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
                                                                 </tr>
                                                                 {% endfor %}
                                                             </tbody>
-                                                        </table> 
+                                                        </table>
+                                                        {% else %}
+                                                            <h3>No Comments to display</h3>
+                                                        {% endif %} 
                                                     </div> 
                                                     
 
@@ -519,7 +521,7 @@ function ExportAsPDF() {
     const margin = 10; // Adjust as needed
     const pdfOptions = {
         margin: [margin, margin, margin, margin], // top, right, bottom, left
-        filename: "profile.pdf",
+        filename: "holiday_table.pdf",
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
@@ -597,34 +599,59 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-// Function to send PDF via AJAX
-// function sendPDFByEmail(email) {
 
-//     // Get the generated PDF file
-//     const pdfFile = ExportAsPDF();
+function SendAsPDF() {
+    console.log("Exporting as PDF...");
+    const container = document.getElementById('holidayList');
 
-//     // Prepare data to send via AJAX
-//     const formData = new FormData();
-//     formData.append('email', email);
-//     formData.append('pdf_file', pdfFile);
+    // Save the original styles
+    const originalStyles = {
+        backgroundColor: container.style.backgroundColor,
+        color: container.style.color,
+    };
 
-//     // Send AJAX request
-//     $.ajax({
-//         url:'',
-//         type: 'POST',
-//         data: formData,
-//         processData: false,
-//         contentType: false,
-//         success: function(response) {
-//             // Handle success
-//             console.log('Email sent successfully');
-//         },
-//         error: function(xhr, status, error) {
-//             // Handle error
-//             console.error('Error sending email:', error);
-//         }
-//     });
-// }
+    // Set the container's background color to white and text color to black for specific columns
+    const headerCells = container.querySelectorAll('thead th');
+    const dataCells = container.querySelectorAll('tbody td');
+
+    headerCells.forEach(cell => {
+        cell.style.backgroundColor = 'white';
+        cell.style.color = 'black';
+    });
+
+    dataCells.forEach(cell => {
+        cell.style.backgroundColor = 'white';
+        cell.style.color = 'black';
+    });
+
+    // Identify and hide the last column from the HTML content
+    const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
+    Array.from(container.rows).forEach(row => {
+        row.cells[lastColumnIndex].style.display = 'none';
+    });
+
+    // Add margin to the PDF
+    const margin = 10; // Adjust as needed
+    const pdfOptions = {
+        margin: [margin, margin, margin, margin], // top, right, bottom, left
+        filename: "holiday_table.pdf",
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
+    };
+
+
+    var linkToSecondPage = '{% url "company_holiday_overview_email_send" %}?table_pdf=' + holiday_table.pdf;
+    window.location.href = linkToSecondPage; // Redirect to the views with pdf
+
+}
+
+
+
+
+
+
+
 
 
     </script>

@@ -775,6 +775,12 @@ def company_holiday_overview_comment(request,pk):
         return redirect('company_holiday_overview')
     
     return redirect('company_holiday_overview')
+
+def company_holiday_overview_comment_delete(request,pk):
+    c1 = Comment_holiday.objects.get(id=pk)
+    c1.delete()
+
+    return redirect('company_holiday_overview')
         
 
 
@@ -811,6 +817,79 @@ def company_holiday_overview_comment(request,pk):
 #         message.send()
 
 #         return HttpResponse("Email sent successfully")
+
+
+def company_holiday_overview_send_email(request):
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    month = request.GET.get('mn')
+    year = request.GET.get('yr')
+
+    if request.method=="POST":
+        eaddress=request.POST['email']
+        # Fetch data from the database
+        data = Holiday.objects.filter(user=login_d,company=company_id,start_date__month=month,start_date__year=year)
+
+        # Render the data in a template
+        template = get_template('company/company_holiday_overview.html')
+        context = {'data': data}
+        html = template.render(context)
+
+        # Use BeautifulSoup to extract the desired table
+        soup = BeautifulSoup(html, 'html.parser')
+        table_html = soup.find('table', {'id': 'holidayList'}).prettify()
+
+        # Create a PDF file
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="table.pdf"'
+
+        # Convert extracted HTML to PDF
+        pisa_status = pisa.CreatePDF(table_html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('Failed to generate PDF: %s' % pisa_status.err)
+
+        # Send PDF as an email attachment
+        # Send email with attached PDF
+        subject = "Holiday List"
+        message = "Holiday List"
+        recipient = eaddress
+        pdf_data = BytesIO()
+
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[recipient]
+        )
+        email.attach('table.pdf', pdf_data.getvalue(), 'application/pdf')
+        email.send()
+
+        return redirect('company_holiday_overview')
+    
+
+def company_holiday_overview_email_send(request):
+
+    if request.method=="POST":
+        eaddress=request.POST['email']
+
+        subject = "Holiday List"
+        message = "Holiday List"
+        recipient = eaddress
+
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[recipient]
+        )
+        email.attach('table.pdf', 'application/pdf')
+        email.send()
+
+        return redirect('company_holiday_overview')
+
 
 
 
