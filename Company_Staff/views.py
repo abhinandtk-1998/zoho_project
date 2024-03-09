@@ -872,7 +872,12 @@ def company_holiday_overview_send_email(request):
 def company_holiday_overview_email_send(request):
 
     if request.method=="POST":
-        eaddress=request.POST['email']
+
+        eaddress = request.POST.get('email')
+
+        pdf_file = request.FILES['pdf']
+        
+
 
         subject = "Holiday List"
         message = "Holiday List"
@@ -885,7 +890,7 @@ def company_holiday_overview_email_send(request):
             from_email=settings.EMAIL_HOST_USER,
             to=[recipient]
         )
-        email.attach('table.pdf', 'application/pdf')
+        email.attach(pdf_file, 'application/pdf')
         email.send()
 
         return redirect('company_holiday_overview')
