@@ -14,6 +14,10 @@
   a:hover{
     color:white;
   }
+
+  .form-control{
+    width: 250px;
+  }
 </style>
 
 <body>
@@ -29,17 +33,21 @@
         <div style="overflow-x:auto;"> 
           <h1 class="text-center text-white">ALL HOLIDAYS</h1>
           <div class="table-responsive">
-            <input type="text" id="searchInput" placeholder="Search...">
-            <label for="sortOption">Sort by:</label>
-            <select id="sortOption">
-              <option value="all">All</option>
-              <option value="month">Month</option>
-              <option value="year">Year</option>
-            </select>
-            <button onclick="exportToExcel()" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-arrow-up"></i>Export</button>
-            <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-arrow-down"></i> Import </a>
-            <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-secondary mb-2 text-grey"><i class="fa fa-plus text-yellow" ></i>New</a>
-            <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
+            <div class="d-flex align-items-center">
+              <input type="text" id="searchInput" placeholder="Search..." class="form-control mr-2 m-2 text-white">
+              <button class="btn btn-outline-secondary dropdown-toggle text-grey mr-2 m-2" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-sort"></i>
+              </button>
+              <ul class="dropdown-menu mr-2 m-2" aria-labelledby="sortButton2">
+                  <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
+                  <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
+                  <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
+              </ul>
+              <button onclick="exportToExcel()" class="btn btn-outline-secondary mr-2 text-grey m-2"><i class="fa fa-arrow-up"></i>Export</button>
+              <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-secondary mr-2 text-grey m-2"><i class="fa fa-arrow-down"></i> Import </a>
+              <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-secondary text-grey m-2"><i class="fa fa-plus text-yellow"></i>New</a>
+          </div>
+            <table class="table mt-lg-3 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
               <thead>
                 <tr class="border-bottom border-dark">
                   <th scope="col" ><b>Sl no.</b></th>
@@ -77,14 +85,98 @@
 
 
     <script>
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    var sortButton = document.getElementById('sortButton2');
+    var sortDropdown = document.querySelector('.dropdown-menu');
+    var holidayTable = document.getElementById('myTable').getElementsByTagName('tbody')[0];
+    var rows = holidayTable.getElementsByTagName('tr');
+
+    sortButton.addEventListener('click', function (event) {
+        event.stopPropagation();
+        sortDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!sortButton.contains(event.target)) {
+            sortDropdown.classList.remove('show');
+        }
+    });
+
+    var dropdownItems = document.querySelectorAll('.dropdown-item');
+    dropdownItems.forEach(function (item) {
+        item.addEventListener('click', function (event) {
+            event.preventDefault();
+            var sortValue = item.getAttribute('data-sort');
+            sortTable(sortValue);
+            sortDropdown.classList.remove('show');
+        });
+    });
+
+    function sortTable(sortValue) {
+        if (sortValue === 'month') {
+            sortTableByMonth();
+        } else if (sortValue === 'year') {
+            sortTableByColumn(2); // Assuming year is in the third column (index 2)
+        } else if (sortValue === 'all') {
+            sortTableByColumn(0); // Sorting by the first column (Sl no.)
+        } else {
+            resetTable();
+        }
+    }
+
+    function sortTableByMonth() {
+        var rowsArray = Array.prototype.slice.call(rows);
+        rowsArray.sort(function (a, b) {
+            var monthA = getMonthIndex(a.cells[1].textContent.trim());
+            var monthB = getMonthIndex(b.cells[1].textContent.trim());
+            return monthA - monthB;
+        });
+        reAppendRows(rowsArray);
+    }
+
+    function sortTableByColumn(columnIndex) {
+        var rowsArray = Array.prototype.slice.call(rows);
+        rowsArray.sort(function (a, b) {
+            var valueA = a.cells[columnIndex].textContent.trim();
+            var valueB = b.cells[columnIndex].textContent.trim();
+            return valueA.localeCompare(valueB);
+        });
+        reAppendRows(rowsArray);
+    }
+
+    function resetTable() {
+        for (var i = 0; i < rows.length; i++) {
+            holidayTable.appendChild(rows[i]);
+        }
+    }
+
+    function reAppendRows(sortedRows) {
+        for (var i = 0; i < sortedRows.length; i++) {
+            holidayTable.appendChild(sortedRows[i]);
+        }
+    }
+
+    function getMonthIndex(monthName) {
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        return months.indexOf(monthName);
+    }
+});
+
+
+
+
+
+
       document.addEventListener("DOMContentLoaded", function () {
         let searchInput = document.getElementById('searchInput');
-        let sortOption = document.getElementById('sortOption');
         let tableBody = document.querySelector('tbody');
         let rows = tableBody.getElementsByTagName('tr');
 
         searchInput.addEventListener('keyup', filterRows);
-        sortOption.addEventListener('change', sortRows);
 
         function filterRows() {
           let filter = searchInput.value.toUpperCase();
@@ -113,29 +205,6 @@
           }
         }
 
-        function sortRows() {
-          let sortBy = sortOption.value;
-          let rowsArray = Array.from(rows);
-
-          rowsArray.sort(function(a, b) {
-            let aValue = a.cells[sortBy === 'all' ? 0 : sortBy === 'month' ? 1 : 2].innerText;
-            let bValue = b.cells[sortBy === 'all' ? 0 : sortBy === 'month' ? 1 : 2].innerText;
-
-            if (sortBy === 'month') {
-              aValue = getMonthIndex(aValue);
-              bValue = getMonthIndex(bValue);
-            } else if (sortBy === 'year') {
-              aValue = parseInt(aValue);
-              bValue = parseInt(bValue);
-            }
-
-            return aValue - bValue;
-          });
-
-          for (let i = 0; i < rowsArray.length; i++) {
-            tableBody.appendChild(rowsArray[i]);
-          }
-        }
 
         function getMonthIndex(monthName) {
           const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

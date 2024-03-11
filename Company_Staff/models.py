@@ -351,6 +351,13 @@ class Holiday(models.Model):
     holiday_name = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(LoginDetails, on_delete=models.CASCADE, null=True, blank=True)
     company=models.ForeignKey(CompanyDetails, on_delete=models.CASCADE, null=True,blank=True)
+
+class Holiday_history(models.Model):
+    company=models.ForeignKey(CompanyDetails, on_delete=models.CASCADE, null=True,blank=True)
+    user = models.ForeignKey(LoginDetails, on_delete=models.CASCADE, null=True, blank=True)
+    holiday = models.ForeignKey(Holiday, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    action = models.CharField(max_length=255, null=True, blank=True)
     
 class Comment_holiday(models.Model):
     holiday_details = models.ForeignKey(Holiday, on_delete = models.CASCADE,null=True,blank=True)

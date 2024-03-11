@@ -61,7 +61,7 @@
                             <h1 class="text-center text-white">All Holidays</h1>
                             <div class="table-responsive">
                                 <div class="mb-3">
-                                    <input type="text" id="searchInput" class="form-control" placeholder="Type to search">
+                                    <input type="text" id="searchInput" class="form-control text-white" placeholder="Type to search">
                                 </div>
                                 <div class="mb-3 d-flex align-items-center">
                                     <div class="dropdown me-2">
@@ -125,8 +125,8 @@
                                                     <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                                 </ul>
                                             </div>
-                                            <button class="btn btn-outline-secondary text-grey" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
-                                            <button class="btn btn-outline-secondary text-grey" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
+                                            <button class="btn btn-outline-secondary text-grey m-2" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
+                                            <button class="btn btn-outline-secondary text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
                                         </div>
 
                                         <!-- WhatsApp Modal -->
@@ -160,7 +160,7 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <form onsubmit="return SendAsPDF(event)" method="post">
+                                                        <form onsubmit="return SendAsPDF()" method="post">
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Email address</label>
@@ -191,15 +191,15 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for i in events %}
+                                                {% for key, row in event_table.items %}
                                                 <tr style="font-size: large;">
-                                                    <td>{{i.id}}</td>
-                                                    <td style="text-transform: capitalize;">{{i.holiday_name}}</td>
-                                                    <td>{{i.start_date}}</td>
-                                                    <td>{{i.end_date}}</td>
-                                                    <td><a href="{% url 'company_holiday_overview_delete' i.id %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
-                                                    <a href="{% url 'company_holiday_overview_edit' i.id %}" style="color:yellow"><i class="fa fa-edit"></i></a>
-                                                    <button type="button" data-toggle="modal" data-target="#commentModal" title="Comment"><i class="fa fa-comment"></i></button>
+                                                    <td>{{ row.0 }}</td>
+                                                    <td style="text-transform: capitalize;">{{ row.1 }}</td>
+                                                    <td>{{ row.2 }}</td>
+                                                    <td>{{ row.3 }}</td>
+                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
+                                                    <a href="{% url 'company_holiday_overview_edit' row.4 %}" style="color:yellow;"><i class="fa fa-edit"></i></a>
+                                                    <button type="button" data-toggle="modal" data-target="#commentModal" title="Comment" style="color:blue;"><i class="fa fa-comment"></i></button>
                                                     <!-- Comment modal -->
                                                     <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -211,32 +211,28 @@
                                                             </button>
                                                             </div>
                                                             <div class="table-responsive">
-                                                                {% if comments is not None %}
                                                                 <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
                                                                     <thead>
                                                                         <tr class="border-bottom border-dark">
-                                                                            <th scope="col"><b>Sl.No</b></th>
                                                                             <th scope="col"><b>Comment</b></th>
                                                                             <th scope="col"><b>Action</b></th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         {% for c in comments %}
+                                                                        {% if c.holiday_details == row.4 %}
                                                                         <tr class="border-bottom border-dark">
-                                                                            <td>{{c.id}}</td>
                                                                             <td>{{c.comment}}</td>
                                                                             <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
                                                                         </tr>
+                                                                        {% endif %}
                                                                         {% endfor %}
                                                                     </tbody>
                                                                 </table>
-                                                                {% else %}
-                                                                    <h3>No Comments to display</h3>
-                                                                {% endif %} 
                                                             </div> 
                                                             
 
-                                                            <form action="{% url 'company_holiday_overview_comment' i.id %}" method="post">
+                                                            <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
                                                                 {% csrf_token %}
                                                             <div class="modal-body">
                                                                 <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
@@ -567,10 +563,100 @@ function PrintTable() {
 
     // Close the HTML content
     printWindow.document.write('</body></html>');
+
     printWindow.document.close();
 
     // Print the new window
     printWindow.print();
+
+
+
+
+
+//     const container = document.getElementById('holidayList');
+
+// // Save the original styles
+// const originalStyles = {
+//     backgroundColor: container.style.backgroundColor,
+//     color: container.style.color,
+// };
+
+// // Set the container's background color to white and text color to black for specific columns
+// const headerCells = container.querySelectorAll('thead th');
+// const dataCells = container.querySelectorAll('tbody td');
+
+// headerCells.forEach(cell => {
+//     cell.style.backgroundColor = 'white';
+//     cell.style.color = 'black';
+// });
+
+// dataCells.forEach(cell => {
+//     cell.style.backgroundColor = 'white';
+//     cell.style.color = 'black';
+// });
+
+// // Identify and hide the last column from the HTML content
+// const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
+// Array.from(container.rows).forEach(row => {
+//     row.cells[lastColumnIndex].style.display = 'none';
+// });
+
+// // Add margin to the PDF
+// const margin = 10; // Adjust as needed
+// const pdfOptions = {
+//     margin: [margin, margin, margin, margin], // top, right, bottom, left
+//     filename: "holiday_table.pdf",
+//     image: { type: 'jpeg', quality: 1 },
+//     html2canvas: { scale: 2 },
+//     jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
+// };
+
+// // Generate PDF from the modified container
+// html2pdf()
+//     .from(container)
+//     .set(pdfOptions)
+//     .output('datauristring') // Generate PDF as data URI string
+//     .then(pdfDataUri => {
+//         // Create a new iframe to hold the PDF content
+//         const iframe = document.createElement('iframe');
+//         iframe.style.display = 'none';
+//         document.body.appendChild(iframe);
+
+//         // Set the source of the iframe to the PDF data URI
+//         iframe.src = pdfDataUri;
+
+//         // Wait for the PDF to load in the iframe
+//         iframe.onload = () => {
+//             // Print the PDF
+//             iframe.contentWindow.print();
+
+//             // Cleanup: Remove the iframe after printing
+//             setTimeout(() => {
+//                 document.body.removeChild(iframe);
+//             }, 1000); // Delayed to ensure printing is complete
+//         };
+//     })
+//     .finally(() => {
+//         // Restore the original styles and display the last column after printing
+//         headerCells.forEach(cell => {
+//             cell.style.backgroundColor = '';
+//             cell.style.color = originalStyles.color;
+//         });
+
+//         dataCells.forEach(cell => {
+//             cell.style.backgroundColor = '';
+//             cell.style.color = originalStyles.color;
+//         });
+
+//         Array.from(container.rows).forEach(row => {
+//             row.cells[lastColumnIndex].style.display = '';
+//         });
+
+//         // Restore the original styles for the container
+//         container.style.backgroundColor = originalStyles.backgroundColor;
+//         container.style.color = originalStyles.color;
+//     });
+
 }
 
 
@@ -594,6 +680,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 function SendAsPDF() {
+    var emailaddress = document.getElementById("exampleInputEmail1").value;
+    // Basic email validation could be added here
+
     console.log("Exporting as PDF...");
     const container = document.getElementById('holidayList');
 
@@ -603,42 +692,94 @@ function SendAsPDF() {
         color: container.style.color,
     };
 
-    // Set the container's background color to white and text color to black for specific columns
-    const headerCells = container.querySelectorAll('thead th');
-    const dataCells = container.querySelectorAll('tbody td');
+    // Set styles for PDF generation
+    container.style.backgroundColor = 'white';
+    container.style.color = 'black';
 
-    headerCells.forEach(cell => {
-        cell.style.backgroundColor = 'white';
-        cell.style.color = 'black';
-    });
-
-    dataCells.forEach(cell => {
-        cell.style.backgroundColor = 'white';
-        cell.style.color = 'black';
-    });
-
-    // Identify and hide the last column from the HTML content
-    const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
+    // Hide the last column
+    const lastColumnIndex = container.rows[0].cells.length - 1; 
     Array.from(container.rows).forEach(row => {
         row.cells[lastColumnIndex].style.display = 'none';
     });
 
     // Generate the PDF
     html2canvas(container).then(canvas => {
-        const pdf = new jsPDF('p', 'mm', 'a3'); // Adjust format and orientation
+        const pdf = new jsPDF('p', 'mm', 'a3');
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         pdf.addImage(imgData, 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-        pdf.save("holiday_table.pdf");
+        
+        try {
+            pdf.save("holiday_table.pdf");
+        } catch (error) {
+            console.error("Error while saving PDF:", error);
+            // Handle error appropriately
+        }
 
         // Restore original styles
         container.style.backgroundColor = originalStyles.backgroundColor;
         container.style.color = originalStyles.color;
 
-        // Redirect to email view with PDF
-        var linkToEmailShare = '{% url "company_holiday_overview_email_send" %}?table_pdf=holiday_table.pdf';
+        // Construct the URL to email view with PDF
+        var linkToEmailShare = "{% url 'company_holiday_overview_email_send' %}?table_pdf=holiday_table.pdf&email=" + emailaddress;
+        console.log(linkToEmailShare);
         window.location.href = linkToEmailShare;
+    }).catch(error => {
+        console.error("Error while generating PDF:", error);
+        // Handle error appropriately
     });
 }
+
+
+
+function SendAsWhatsapp() {
+    var emailaddress = document.getElementById("exampleInputEmail1").value;
+    // Basic email validation could be added here
+
+    console.log("Exporting as PDF...");
+    const container = document.getElementById('holidayList');
+
+    // Save the original styles
+    const originalStyles = {
+        backgroundColor: container.style.backgroundColor,
+        color: container.style.color,
+    };
+
+    // Set styles for PDF generation
+    container.style.backgroundColor = 'white';
+    container.style.color = 'black';
+
+    // Hide the last column
+    const lastColumnIndex = container.rows[0].cells.length - 1; 
+    Array.from(container.rows).forEach(row => {
+        row.cells[lastColumnIndex].style.display = 'none';
+    });
+
+    // Generate the PDF
+    html2canvas(container).then(canvas => {
+        const pdf = new jsPDF('p', 'mm', 'a3');
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+        
+        try {
+            pdf.save("holiday_table.pdf");
+        } catch (error) {
+            console.error("Error while saving PDF:", error);
+            // Handle error appropriately
+        }
+
+        // Restore original styles
+        container.style.backgroundColor = originalStyles.backgroundColor;
+        container.style.color = originalStyles.color;
+
+        // Construct the URL to email view with PDF
+        var linkToEmailShare = '{% url "company_holiday_overview_whatsapp_send" %}?table_pdf=holiday_table.pdf&email=' + emailaddress;
+        window.location.href = linkToEmailShare;
+    }).catch(error => {
+        console.error("Error while generating PDF:", error);
+        // Handle error appropriately
+    });
+}
+
 
 
 

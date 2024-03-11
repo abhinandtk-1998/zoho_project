@@ -601,8 +601,18 @@ def company_holiday_new_add(request):
         s_date=request.POST['sdate']
         e_date=request.POST['edate']
 
+        if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id).exists():
+            messages.info(request, 'This holiday already exists')
+            return redirect('company_holiday_new')
+
         holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id)
         holiday_d.save()
+
+        today_date = date.today()
+        action_h = "Created"
+
+        history = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+        history.save()
         
         return redirect('company_holiday')
     
@@ -627,6 +637,9 @@ def company_holiday_import_operation(request):
             # Iterate through rows and save data to database
             for index, row in df.iterrows():
                 # Create a new object of YourModel and populate fields
+                if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=company_id).exists():
+                    continue
+                
                 obj = Holiday(
                     holiday_name=row['title'],
                     start_date=row['s_date'],
@@ -656,6 +669,13 @@ def company_holiday_overview(request):
     year = int(yr)
 
     events = Holiday.objects.filter(start_date__month=month,start_date__year=year)
+
+    event_table = {}
+    j = 1
+
+    for h in events:
+        event_table[j] = [j, h.holiday_name, h.start_date, h.end_date, h.id]
+        j = j + 1
 
     month_list = []
     year_list = []
@@ -708,6 +728,7 @@ def company_holiday_overview(request):
     context = {
         'holiday_table':holiday_table,
         'events':events,
+        'event_table':event_table,
         'month':month,
         'year':year,
         'comments':comment
@@ -719,12 +740,14 @@ def company_holiday_overview(request):
 def company_holiday_overview_delete(request,pk):
 
     h1 = Holiday.objects.get(id=pk)
+    history_h = Holiday_history.objects.get(holiday=pk)
     date1 = h1.start_date
 
     year = date1.year
     month = date1.strftime("%B")
 
     h1.delete()
+    history_h.delete()
     
     return redirect('company_holiday_overview'.format(month, year))
 
@@ -750,10 +773,17 @@ def company_holiday_overview_edit_op(request,pk):
         holiday_d.start_date = s_date
         holiday_d.end_date = e_date
 
+        today_date = date.today()
+
+        history_h = Holiday_history.objects.get(holiday=pk)
+        history_h.date = today_date
+        history_h.action = "Edited"
+
         year = date1.year
         month = date1.strftime("%B")
 
         holiday_d.save()
+        history_h.save()
 
         
         return redirect('company_holiday_overview'.format(month, year))
@@ -870,30 +900,41 @@ def company_holiday_overview_send_email(request):
     
 
 def company_holiday_overview_email_send(request):
+    eaddress = request.GET.get('email')
 
-    if request.method=="POST":
+    # Retrieve the PDF file from the request
+    
 
-        eaddress = request.POST.get('email')
+    subject = "Holiday List"
+    message = "Please find the attached holiday list."
+    recipient = eaddress
 
-        pdf_file = request.FILES['pdf']
-        
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[recipient]
+    )
+    
+    # Attach the PDF file to the email
 
 
-        subject = "Holiday List"
-        message = "Holiday List"
-        recipient = eaddress
-
-
-        email = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[recipient]
-        )
-        email.attach(pdf_file, 'application/pdf')
+    try:
+        # Send the email
         email.send()
-
+    except Exception as e:
+        # Handle email sending error
+        # You might want to log the error or provide user feedback
+        print("Error sending email:", e)
         return redirect('company_holiday_overview')
+
+    # Redirect with success message
+    # You might want to provide feedback to the user indicating that the email was sent successfully
+    return redirect('company_holiday_overview')
+
+def company_holiday_overview_whatsapp_send(request):
+    return redirect('company_holiday_overview')
+
 
 
 
