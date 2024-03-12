@@ -26,6 +26,11 @@ from django.db.models import Q
 from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
 import calendar
 from django.template.loader import render_to_string
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 # from django.views import View
 # from weasyprint import HTML
 
@@ -731,7 +736,7 @@ def company_holiday_overview(request):
         'event_table':event_table,
         'month':month,
         'year':year,
-        'comments':comment
+        'comments':comment,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
@@ -849,17 +854,114 @@ def company_holiday_overview_comment_delete(request,pk):
 #         return HttpResponse("Email sent successfully")
 
 
-def company_holiday_overview_send_email(request):
+def company_holiday_overview_email_send(request):
+
     login_id = request.session['login_id']
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
     month = request.GET.get('mn')
     year = request.GET.get('yr')
+    
+    if request.method=="POST":
+        eaddress=request.POST['email']
+        h1 = Holiday.objects.filter(start_date__month=month,start_date__year=year,user=login_d,company=company_id)
+        holiday_d = {}
+        j = 1
+
+        for h in h1:
+            holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
+            j = j + 1
+
+         # Create a PDF document
+        pdf_file_name = "holiday_table.pdf"
+        doc = SimpleDocTemplate(pdf_file_name, pagesize=letter)
+
+         # Create a heading
+        heading_text = "<b>Holiday Overview</b>"
+        heading_style = ParagraphStyle(name='Heading1', alignment=1)
+        heading = Paragraph(heading_text, heading_style)
+
+        # Create a list to hold all the data rows
+        table_data = []
+
+        # Add header row
+        headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
+        table_data.append(headers)
+
+        # Extract keys and values from the dictionary
+        keys = list(holiday_d.keys())
+        values = list(holiday_d.values())
+
+
+        # Add keys as the first column
+        keys_column = [[str(key)] for key in keys]
+
+        # Combine keys column with values
+        for i in range(len(values)):
+            row = keys_column[i] + values[i]
+            table_data.append(row)
+
+    
+    
+
+        # Create a table from the data
+        table = Table(table_data)
+
+        # Style the table
+        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+        table.setStyle(style)
+
+        # Build the PDF document
+        elements = [heading, table]
+        doc.build(elements)
+
+
+        subject = "Holiday List"
+        message = "Please find the attached holiday list."
+        recipient = eaddress
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[recipient]
+        )
+        
+        # Attach the PDF file to the email
+        with open(pdf_file_name, 'rb') as pdf_file:
+            pdf_content = pdf_file.read()
+
+        # Attach the PDF file to the email
+        email.attach(pdf_file_name, pdf_content, 'application/pdf')
+
+        email.send()
+
+        return redirect('company_holiday_overview')
+
+
+
+
+
+
+def company_holiday_overview_send_email(request):
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    # month = request.GET.get('mn')
+    year = request.GET.get('yr')
+    month = request.GET.get('mn')
 
     if request.method=="POST":
         eaddress=request.POST['email']
         # Fetch data from the database
-        data = Holiday.objects.filter(user=login_d,company=company_id,start_date__month=month,start_date__year=year)
+        data = Holiday.objects.filter(user=login_d,company=company_id,start_date__year=year,start_date__month=month)
 
         # Render the data in a template
         template = get_template('company/company_holiday_overview.html')
@@ -899,40 +1001,44 @@ def company_holiday_overview_send_email(request):
         return redirect('company_holiday_overview')
     
 
-def company_holiday_overview_email_send(request):
-    eaddress = request.GET.get('email')
+# def company_holiday_overview_email_send(request):
 
-    # Retrieve the PDF file from the request
+
+
+#     eaddress = request.GET.get('email')
+
+#     # Retrieve the PDF file from the request
+#     pdf_file = request.FILES.get('table_pdf')
+
+#     subject = "Holiday List"
+#     message = "Please find the attached holiday list."
+#     recipient = eaddress
+
+#     email = EmailMessage(
+#         subject=subject,
+#         body=message,
+#         from_email=settings.EMAIL_HOST_USER,
+#         to=[recipient]
+#     )
     
+#     # Attach the PDF file to the email
+#     email.attach(pdf_file.name, pdf_file.read(), 'application/pdf')
 
-    subject = "Holiday List"
-    message = "Please find the attached holiday list."
-    recipient = eaddress
+#     try:
+#         # Send the email
+#         email.send()
+#     except Exception as e:
+#         # Handle email sending error
+#         # You might want to log the error or provide user feedback
+#         print("Error sending email:", e)
+#         return redirect('company_holiday_overview')
 
-    email = EmailMessage(
-        subject=subject,
-        body=message,
-        from_email=settings.EMAIL_HOST_USER,
-        to=[recipient]
-    )
-    
-    # Attach the PDF file to the email
-
-
-    try:
-        # Send the email
-        email.send()
-    except Exception as e:
-        # Handle email sending error
-        # You might want to log the error or provide user feedback
-        print("Error sending email:", e)
-        return redirect('company_holiday_overview')
-
-    # Redirect with success message
-    # You might want to provide feedback to the user indicating that the email was sent successfully
-    return redirect('company_holiday_overview')
+#     # Redirect with success message
+#     # You might want to provide feedback to the user indicating that the email was sent successfully
+#     return redirect('company_holiday_overview')
 
 def company_holiday_overview_whatsapp_send(request):
+    
     return redirect('company_holiday_overview')
 
 

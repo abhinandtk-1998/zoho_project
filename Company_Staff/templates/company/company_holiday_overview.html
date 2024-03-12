@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+{% load social_share %}
 
 <!-- Include FullCalendar CSS -->
 
@@ -19,6 +20,8 @@
 
 <!-- Include jQuery from a CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
 
@@ -109,7 +112,7 @@
                             <div class="card-body">
                                 
                                 <div class="row" id="cal">
-                                    <div class="col" id="calendar"></div>
+                                    <div class="col" id="calendar" ></div>
                                 </div>
                                 
                                 <div class="row" id="cal_list">
@@ -138,7 +141,7 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <form action="" method="post">
+                                                        <form action="{% url 'company_holiday_overview_whatsapp_send' %}?mn={{month}}&yr={{year}}" method="post">
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Whatsapp Number</label>
@@ -160,7 +163,7 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <form onsubmit="return SendAsPDF()" method="post">
+                                                        <form action="{% url 'company_holiday_overview_email_send' %}?mn={{month}}&yr={{year}}" method="post">
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Email address</label>
@@ -178,9 +181,7 @@
                                         
                 
                                         <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
-                                            <center><h3 id="headDing"><span id="monthName">{% with month_number=1 %}
-                                                Month: {{ month_number|date:"F" }}
-                                                {% endwith %}</span>, {{year}}</h3></center><br>
+                                            <center><h3 id="headDing"><span id="monthName">{{ month }}</span>, {{year}}</h3></center><br>
                                             <thead class="thead"  >
                                                 <tr style="font-size: large; " >
                                                     <th>Sl No.</th>
@@ -720,7 +721,7 @@ function SendAsPDF() {
         container.style.color = originalStyles.color;
 
         // Construct the URL to email view with PDF
-        var linkToEmailShare = "{% url 'company_holiday_overview_email_send' %}?table_pdf=holiday_table.pdf&email=" + emailaddress;
+        var linkToEmailShare = '{% url "company_holiday_overview_email_send" %}?table_pdf=holiday_table.pdf & email=' + emailaddress;
         console.log(linkToEmailShare);
         window.location.href = linkToEmailShare;
     }).catch(error => {
@@ -728,6 +729,13 @@ function SendAsPDF() {
         // Handle error appropriately
     });
 }
+
+
+
+
+
+
+
 
 
 
