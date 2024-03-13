@@ -26,6 +26,8 @@
 
 
 
+
+
 <style>
 
     @media print {
@@ -124,7 +126,7 @@
                                                     <i class="fa fa-share"></i>Share
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="shareButton">
-                                                    <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#whatsappModal">Whatsapp</a></li>
+                                                    <li><a class="dropdown-item" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
                                                     <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                                 </ul>
                                             </div>
@@ -132,27 +134,7 @@
                                             <button class="btn btn-outline-secondary text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
                                         </div>
 
-                                        <!-- WhatsApp Modal -->
-                                        <div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="whatsappModalLabel">Share via WhatsApp</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <form action="{% url 'company_holiday_overview_whatsapp_send' %}?mn={{month}}&yr={{year}}" method="post">
-                                                            {% csrf_token %}
-                                                            <div class="form-group">
-                                                                <label for="exampleInputEmail1">Whatsapp Number</label>
-                                                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
-                                                            </div>
-                                                            <button type="submit" class="btn btn-primary">Share</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        
 
                                         <!-- Email Modal -->
                                         <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
@@ -201,6 +183,7 @@
                                                     <td><a href="{% url 'company_holiday_overview_delete' row.4 %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
                                                     <a href="{% url 'company_holiday_overview_edit' row.4 %}" style="color:yellow;"><i class="fa fa-edit"></i></a>
                                                     <button type="button" data-toggle="modal" data-target="#commentModal" title="Comment" style="color:blue;"><i class="fa fa-comment"></i></button>
+                                                    <a data-toggle="modal" datat-target="#historyModal" title="history"><i class="fa fa-history"></i></a>
                                                     <!-- Comment modal -->
                                                     <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -225,6 +208,54 @@
                                                                         <tr class="border-bottom border-dark">
                                                                             <td>{{c.comment}}</td>
                                                                             <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
+                                                                        </tr>
+                                                                        {% endif %}
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div> 
+                                                            
+
+                                                            <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
+                                                                {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                                            
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-secondary">Save</button>
+                                                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                            </div>
+                                                            </form>
+
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- modal end -->
+
+                                                    <!-- Holiday history modal -->
+                                                    <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                            </div>
+                                                            <div class="table-responsive">
+                                                                <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
+                                                                    <thead>
+                                                                        <tr class="border-bottom border-dark">
+                                                                            <th scope="col"><b>Date of Creation/Editing </b></th>
+                                                                            <th scope="col"><b>Action</b></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for h in holiday_history %}
+                                                                        {% if h.holiday == row.4 %}
+                                                                        <tr class="border-bottom border-dark">
+                                                                            <td>{{h.date}}</td>
+                                                                            <td>{{h.action}}</td>
                                                                         </tr>
                                                                         {% endif %}
                                                                         {% endfor %}
@@ -788,6 +819,51 @@ function SendAsWhatsapp() {
     });
 }
 
+document.getElementById('generatePDFLink').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default behavior of the link
+        
+        generatePDFAndShare(); // Call the PDF generation and sharing function
+    });
+
+    function generatePDFAndShare() {
+        const doc = new jsPDF();
+
+        // Get the HTML table element
+        const table = document.getElementById('holidayList');
+
+        // Clone the table to preserve the original
+        const clonedTable = table.cloneNode(true);
+
+        // Remove the last column from the cloned table
+        const rows = clonedTable.getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            if (cells.length > 0) {
+                rows[i].removeChild(cells[cells.length - 1]);
+            } else {
+                const thCells = rows[i].getElementsByTagName('th');
+                if (thCells.length > 0) {
+                    rows[i].removeChild(thCells[thCells.length - 1]);
+                }
+            }
+        }
+
+        // Convert modified table to PDF
+        doc.autoTable({ html: clonedTable });
+
+        // Get PDF as data URI
+        const pdfDataUri = doc.output('datauristring');
+
+        // Encode PDF data URI to base64
+        const base64Pdf = pdfDataUri.split(',')[1];
+
+        // Construct WhatsApp share message with PDF attachment
+        const message = 'Check out this PDF!';
+        const whatsappUrl = `whatsapp://send?text=${message}&data=${base64Pdf}`;
+
+        // Open WhatsApp with share message
+        window.location.href = whatsappUrl;
+    }
 
 
 

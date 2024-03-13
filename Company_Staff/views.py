@@ -727,6 +727,7 @@ def company_holiday_overview(request):
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
     comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
+    holiday_history = Holiday_history.objects.filter(user=login_d, company=company_id)
 
     
 
@@ -737,6 +738,7 @@ def company_holiday_overview(request):
         'month':month,
         'year':year,
         'comments':comment,
+        'holiday_history':holiday_history,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
@@ -1038,8 +1040,8 @@ def company_holiday_overview_send_email(request):
 #     return redirect('company_holiday_overview')
 
 def company_holiday_overview_whatsapp_send(request):
-    
-    return redirect('company_holiday_overview')
+    url = "whatsapp://send?text=Check out this awesome content: {}.".format(request.build_absolute_uri())
+    return redirect(url)
 
 
 
