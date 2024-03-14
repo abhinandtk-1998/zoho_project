@@ -70,10 +70,10 @@
                                 </div>
                                 <div class="mb-3 d-flex align-items-center">
                                     <div class="dropdown me-2">
-                                        <button class="btn btn-outline-secondary dropdown-toggle text-grey" type="button" id="sortButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn btn-outline-secondary dropdown-toggle text-grey" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-sort"></i>
                                         </button>
-                                        <ul class="dropdown-menu" aria-labelledby="sortButton">
+                                        <ul class="dropdown-menu" id="dropdown-menu2" aria-labelledby="sortButton2">
                                             <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
                                             <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
                                             <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
@@ -125,7 +125,7 @@
                                                 <button class="btn btn-outline-secondary dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-share"></i>Share
                                                 </button>
-                                                <ul class="dropdown-menu" aria-labelledby="shareButton">
+                                                <ul class="dropdown-menu" id="dropdown-menu3" aria-labelledby="shareButton">
                                                     <li><a class="dropdown-item" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
                                                     <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                                 </ul>
@@ -163,7 +163,7 @@
                                         
                 
                                         <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
-                                            <center><h3 id="headDing"><span id="monthName">{{ month }}</span>, {{year}}</h3></center><br>
+                                            <h3 id="headDing" class="text-center"><span id="monthName">{{ month }}</span>, {{year}}</h3><br>
                                             <thead class="thead"  >
                                                 <tr style="font-size: large; " >
                                                     <th>Sl No.</th>
@@ -181,105 +181,99 @@
                                                     <td>{{ row.2 }}</td>
                                                     <td>{{ row.3 }}</td>
                                                     <td><a href="{% url 'company_holiday_overview_delete' row.4 %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
-                                                    <a href="{% url 'company_holiday_overview_edit' row.4 %}" style="color:yellow;"><i class="fa fa-edit"></i></a>
-                                                    <button type="button" data-toggle="modal" data-target="#commentModal" title="Comment" style="color:blue;"><i class="fa fa-comment"></i></button>
-                                                    <a data-toggle="modal" datat-target="#historyModal" title="history"><i class="fa fa-history"></i></a>
-                                                    <!-- Comment modal -->
-                                                    <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                            <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                            </div>
-                                                            <div class="table-responsive">
-                                                                <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
-                                                                    <thead>
-                                                                        <tr class="border-bottom border-dark">
-                                                                            <th scope="col"><b>Comment</b></th>
-                                                                            <th scope="col"><b>Action</b></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {% for c in comments %}
-                                                                        {% if c.holiday_details == row.4 %}
-                                                                        <tr class="border-bottom border-dark">
-                                                                            <td>{{c.comment}}</td>
-                                                                            <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
-                                                                        </tr>
-                                                                        {% endif %}
-                                                                        {% endfor %}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div> 
-                                                            
+                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}" style="color:yellow;"><i class="fa fa-edit"></i></a>
+                                                        <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" style="color: blue;"><i class="fa fa-comment"></i></a>
+                                                        <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history"><i class="fa fa-history"></i></a>
 
-                                                            <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
-                                                                {% csrf_token %}
-                                                            <div class="modal-body">
-                                                                <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
-                                                            
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="submit" class="btn btn-secondary">Save</button>
-                                                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                                            </div>
-                                                            </form>
+                                                        <!-- Comment modal -->
+                                                        <div class="modal fade" id="commentModal{{ row.4 }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                                </div>
+                                                                <div class="table-responsive">
+                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
+                                                                        <thead>
+                                                                            <tr class="border-bottom border-dark">
+                                                                                <th scope="col"><b>Comment</b></th>
+                                                                                <th scope="col"><b>Action</b></th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for c in comments %}
+                                                                            {% if c.holiday_details.id == row.4 %}
+                                                                            <tr class="border-bottom border-dark">
+                                                                                <td>{{c.comment}}</td>
+                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
+                                                                            </tr>
+                                                                            {% endif %}
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div> 
+                                                                
 
+                                                                <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
+                                                                    {% csrf_token %}
+                                                                <div class="modal-body">
+                                                                    <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                                                
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-secondary">Save</button>
+                                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                                </div>
+                                                                </form>
+
+                                                            </div>
+                                                            </div>
                                                         </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- modal end -->
+                                                        <!-- modal end -->
 
-                                                    <!-- Holiday history modal -->
-                                                    <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                            </div>
-                                                            <div class="table-responsive">
-                                                                <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
-                                                                    <thead>
-                                                                        <tr class="border-bottom border-dark">
-                                                                            <th scope="col"><b>Date of Creation/Editing </b></th>
-                                                                            <th scope="col"><b>Action</b></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {% for h in holiday_history %}
-                                                                        {% if h.holiday == row.4 %}
-                                                                        <tr class="border-bottom border-dark">
-                                                                            <td>{{h.date}}</td>
-                                                                            <td>{{h.action}}</td>
-                                                                        </tr>
-                                                                        {% endif %}
-                                                                        {% endfor %}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div> 
-                                                            
 
-                                                            <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
-                                                                {% csrf_token %}
-                                                            <div class="modal-body">
-                                                                <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
-                                                            
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="submit" class="btn btn-secondary">Save</button>
-                                                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                                            </div>
-                                                            </form>
+                                                        
 
+                                                        
+
+                                                        <!-- Holiday history modal -->
+                                                        <div class="modal fade" id="historyModal{{ row.4 }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                                </div>
+                                                                <div class="table-responsive">
+                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
+                                                                        <thead>
+                                                                            <tr class="border-bottom border-dark">
+                                                                                <th scope="col"><b>Date of Creation/Editing </b></th>
+                                                                                <th scope="col"><b>Action</b></th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for h in holiday_history %}
+                                                                            {% if h.holiday.id == row.4 %}
+                                                                            <tr class="border-bottom border-dark">
+                                                                                <td>{{h.date}}</td>
+                                                                                <td>{{h.action}}</td>
+                                                                            </tr>
+                                                                            {% endif %}
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div> 
+
+                                                            </div>
+                                                            </div>
                                                         </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- modal end -->
+                                    
+                                                        <!-- modal end -->
                                                     </td>
                                                     
                                                 </tr>
@@ -416,8 +410,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('DOMContentLoaded', function () {
         // Get the sort button, dropdown menu, and table
-        var sortButton = document.getElementById('sortButton');
-        var sortDropdown = document.querySelector('.dropdown-menu');
+        var sortButton = document.getElementById('sortButton2');
+        var sortDropdown = document.querySelector('dropdown-menu2');
         var holidayTable = document.getElementById('holidayTable').getElementsByTagName('tbody')[0];
         var rows = holidayTable.getElementsByTagName('tr');
 
@@ -496,6 +490,88 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+
+
+
+
+
+
+
+    // share button
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     // Get the sort button, dropdown menu, and table
+    //     var shareButton = document.getElementById('shareButton');
+    //     var sortDropdown = document.querySelector('dropdown-menu3');
+
+    //     // Add event listener for sort button click
+    //     sortButton.addEventListener('click', function (event) {
+    //         event.stopPropagation(); // Prevents the document click event from closing the dropdown
+    //         // Toggle visibility of the dropdown menu
+    //         sortDropdown.classList.toggle('show');
+    //     });
+
+    //     // Add event listener to close the dropdown when clicking outside
+    //     document.addEventListener('click', function (event) {
+    //         if (!sortButton.contains(event.target)) {
+    //             sortDropdown.classList.remove('show');
+    //         }
+    //     });
+
+    //     // Add event listener for dropdown item click
+    //     var dropdownItems = document.querySelectorAll('.dropdown-item');
+    //     dropdownItems.forEach(function (item) {
+    //         item.addEventListener('click', function (event) {
+    //             event.preventDefault();
+    //             var sortValue = item.getAttribute('data-sort');
+    //             sortTable(sortValue);
+    //             // Close the dropdown menu
+    //             sortDropdown.classList.remove('show');
+    //         });
+    //     });
+
+    //     // Function to sort table rows based on selected option
+    //     function sortTable(sortValue) {
+    //         // Sort the table rows based on the selected option
+    //         if (sortValue === 'month') {
+    //             sortTableByMonth();
+    //         } else if (sortValue === 'year') {
+    //             sortTableByColumn(2); // Sort by year (column index 2)
+    //         } else {
+    //             // Reset the table to its original order
+    //             for (var i = 0; i < rows.length; i++) {
+    //                 holidayTable.appendChild(rows[i]);
+    //             }
+    //         }
+    //     }
+
+    //     // Function to sort table rows by month
+    //     function sortTableByMonth() {
+    //         // Convert HTMLCollection to Array for sorting
+    //         var rowsArray = Array.prototype.slice.call(rows);
+            
+    //         // Sort the rows based on the numerical order of months
+    //         rowsArray.sort(function (a, b) {
+    //             var monthA = a.getElementsByTagName('td')[0].textContent.trim();
+    //             var monthB = b.getElementsByTagName('td')[0].textContent.trim();
+    //             return monthOrder[monthA] - monthOrder[monthB];
+    //         });
+
+    //         // Re-append sorted rows to the table
+    //         for (var i = 0; i < rowsArray.length; i++) {
+    //             holidayTable.appendChild(rowsArray[i]);
+    //         }
+    //     }
+    // });
+
+
+
+
+
+
+
+
+
 
 
 
@@ -601,6 +677,14 @@ function PrintTable() {
     // Print the new window
     printWindow.print();
 
+    // Close the new window after a brief delay
+    setTimeout(function() {
+        printWindow.close();
+    }, 250); // Adjust the delay time as needed
+}
+
+
+
 
 
 
@@ -689,22 +773,21 @@ function PrintTable() {
 //         container.style.color = originalStyles.color;
 //     });
 
-}
 
 
 
 
-document.addEventListener("DOMContentLoaded", function() {
-    const shareOptions = document.querySelectorAll('.share-option');
+// document.addEventListener("DOMContentLoaded", function() {
+//     const shareOptions = document.querySelectorAll('.share-option');
   
-    shareOptions.forEach(function(option) {
-        option.addEventListener('click', function(event) {
-            event.preventDefault();
-            const targetModal = document.querySelector(this.getAttribute('data-target'));
-            $(targetModal).modal('show'); // Using jQuery for Bootstrap modal
-        });
-    });
-});
+//     shareOptions.forEach(function(option) {
+//         option.addEventListener('click', function(event) {
+//             event.preventDefault();
+//             const targetModal = document.querySelector(this.getAttribute('data-target'));
+//             $(targetModal).modal('show'); // Using jQuery for Bootstrap modal
+//         });
+//     });
+// });
 
 
 

@@ -38,7 +38,7 @@
               <button class="btn btn-outline-secondary dropdown-toggle text-grey mr-2 m-2" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fas fa-sort"></i>
               </button>
-              <ul class="dropdown-menu mr-2 m-2" aria-labelledby="sortButton2">
+              <ul class="dropdown-menu mr-2 m-2" id="dropdown-menu2" aria-labelledby="sortButton2">
                   <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
                   <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
                   <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
@@ -91,7 +91,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     var sortButton = document.getElementById('sortButton2');
-    var sortDropdown = document.querySelector('.dropdown-menu');
+    var sortDropdown = document.querySelector('dropdown-menu2');
     var holidayTable = document.getElementById('myTable').getElementsByTagName('tbody')[0];
     var rows = holidayTable.getElementsByTagName('tr');
 
