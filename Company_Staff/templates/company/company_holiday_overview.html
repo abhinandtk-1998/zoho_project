@@ -47,10 +47,21 @@
     .modal-content {
         background-color: rgb(41, 37, 37);/* Modal content background color */
         width: 80%; /* Adjust width as needed */
-        max-width: 600px; /* Maximum width */
+        max-width: 1000px; /* Maximum width */
         margin: 20px auto; /* Center modal horizontally */
         padding: 20px;
         color: white;
+    }
+
+    #dropdown-menu3  a {
+        display: block;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #333;
+    }
+
+    #dropdown-menu3  a:hover {
+        background-color: #ddd;
     }
 
 
@@ -70,16 +81,16 @@
                                 </div>
                                 <div class="mb-3 d-flex align-items-center">
                                     <div class="dropdown me-2">
-                                        <button class="btn btn-outline-secondary dropdown-toggle text-grey" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn btn-outline-warning dropdown-toggle text-grey" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-sort"></i>
                                         </button>
                                         <ul class="dropdown-menu" id="dropdown-menu2" aria-labelledby="sortButton2">
-                                            <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
-                                            <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
-                                            <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="all">All</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="month">Month</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="year">Year</a></li>
                                         </ul>
                                     </div>
-                                    <a href="{% url 'company_holiday_new' %}?n=1" class="btn btn-outline-secondary text-grey ms-auto"><i class="fa fa-plus text-yellow"></i> New Holiday</a>
+                                    <a href="{% url 'company_holiday_new' %}?n=1" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-plus text-yellow"></i> New Holiday</a>
                                 </div>
                                 <table id="holidayTable"  class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0);color: white;">
                                     <thead>
@@ -122,16 +133,16 @@
                                     <div class="table-responsive">
                                         <div class="mb-3 d-flex align-items-center">
                                             <div class="dropdown me-3">
-                                                <button class="btn btn-outline-secondary dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <button class="btn btn-outline-warning dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-share"></i>Share
                                                 </button>
                                                 <ul class="dropdown-menu" id="dropdown-menu3" aria-labelledby="shareButton">
-                                                    <li><a class="dropdown-item" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
-                                                    <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
+                                                    <li><a class="dropdown-item1 text-grey" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
+                                                    <li><a class="dropdown-item1" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                                 </ul>
                                             </div>
-                                            <button class="btn btn-outline-secondary text-grey m-2" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
-                                            <button class="btn btn-outline-secondary text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
+                                            <button class="btn btn-outline-warning text-grey m-2" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
+                                            <button class="btn btn-outline-warning text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
                                         </div>
 
                                         
@@ -142,14 +153,15 @@
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="emailModalLabel" style="color: white;">Share via Email</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
                                                     </div>
                                                     <div class="modal-body">
                                                         <form action="{% url 'company_holiday_overview_email_send' %}?mn={{month}}&yr={{year}}" method="post">
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Email address</label>
-                                                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
+                                                                <input type="email" class="form-control mb-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
                                                             </div>
                                                             <button type="submit" class="btn btn-primary">Share</button>
                                                         </form>
@@ -163,11 +175,11 @@
                                         
                 
                                         <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
-                                            <h3 id="headDing" class="text-center"><span id="monthName">{{ month }}</span>, {{year}}</h3><br>
+                                            <h3 id="headDing" class="text-center text-white"><span id="monthName">{{ month_name }}</span>, {{ year }}</h3><br>
                                             <thead class="thead"  >
                                                 <tr style="font-size: large; " >
                                                     <th>Sl No.</th>
-                                                    <th>NAME</th>
+                                                    <th>HOLIDAY NAME</th>
                                                     <th>START DATE</th>
                                                     <th>END DATE</th>
                                                     <th>ACTION</th>
@@ -191,7 +203,7 @@
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
                                                                 <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
                                                                 </div>
@@ -244,7 +256,7 @@
                                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
                                                                 </div>
@@ -252,8 +264,9 @@
                                                                     <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
                                                                         <thead>
                                                                             <tr class="border-bottom border-dark">
-                                                                                <th scope="col"><b>Date of Creation/Editing </b></th>
+                                                                                <th scope="col"><b>Date </b></th>
                                                                                 <th scope="col"><b>Action</b></th>
+                                                                                <th scope="col"><b>User</b></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
@@ -262,6 +275,7 @@
                                                                             <tr class="border-bottom border-dark">
                                                                                 <td>{{h.date}}</td>
                                                                                 <td>{{h.action}}</td>
+                                                                                <td>{{h.user.first_name}}</td>
                                                                             </tr>
                                                                             {% endif %}
                                                                             {% endfor %}
@@ -298,6 +312,9 @@
 
 
     <script>
+
+        // calendar
+
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
 
@@ -325,6 +342,10 @@
 
             
             calendar.render();
+
+            // CSS styling for calendar header
+            var headerEl = document.querySelector('.fc-toolbar-title');
+            headerEl.style.color = 'white';
         });
 
     
@@ -332,517 +353,312 @@
 
         // hide or show calendar
 
-
         document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the links and divs
-    var calendarLink = document.getElementById("calendarLink");
-    var holidayListLink = document.getElementById("holidayListLink");
-    var calendarDiv = document.getElementById("cal");
-    var holidayListDiv = document.getElementById("cal_list");
-    
-    // Hide the holiday list div initially
-    holidayListDiv.style.display = "none";
-    
-    // Add click event listeners
-    calendarLink.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevent the default behavior of the anchor tag
-        calendarDiv.style.display = "block"; // Show the calendar div
-        holidayListDiv.style.display = "none"; // Hide the holiday list div
+            // Get references to the links and divs
+            var calendarLink = document.getElementById("calendarLink");
+            var holidayListLink = document.getElementById("holidayListLink");
+            var calendarDiv = document.getElementById("cal");
+            var holidayListDiv = document.getElementById("cal_list");
+            
+            // Hide the holiday list div initially
+            holidayListDiv.style.display = "none";
+            
+            // Add click event listeners
+            calendarLink.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent the default behavior of the anchor tag
+                calendarDiv.style.display = "block"; // Show the calendar div
+                holidayListDiv.style.display = "none"; // Hide the holiday list div
 
-        // Optionally, add/remove classes for styling
-        calendarLink.classList.add("active");
-        holidayListLink.classList.remove("active");
+                // Optionally, add/remove classes for styling
+                calendarLink.classList.add("active");
+                holidayListLink.classList.remove("active");
 
-        // Add class to the selected div
-        calendarLink.style.backgroundColor = '#213b52';
-        holidayListLink.style.backgroundColor = 'transparent' ;
-    });
+                // Add class to the selected div
+                calendarLink.style.backgroundColor = '#213b52';
+                holidayListLink.style.backgroundColor = 'transparent' ;
+            });
 
-    holidayListLink.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevent the default behavior of the anchor tag
-        calendarDiv.style.display = "none"; // Hide the calendar div
-        holidayListDiv.style.display = "block"; // Show the holiday list div
+            holidayListLink.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent the default behavior of the anchor tag
+                calendarDiv.style.display = "none"; // Hide the calendar div
+                holidayListDiv.style.display = "block"; // Show the holiday list div
 
-        // Optionally, add/remove classes for styling
-        calendarLink.classList.remove("active");
-        holidayListLink.classList.add("active");
+                // Optionally, add/remove classes for styling
+                calendarLink.classList.remove("active");
+                holidayListLink.classList.add("active");
 
-         // Add class to the selected div
-        calendarLink.style.backgroundColor = 'transparent';
-        holidayListLink.style.backgroundColor = '#213b52' ;
-    });
-});
-
-
+                // Add class to the selected div
+                calendarLink.style.backgroundColor = 'transparent';
+                holidayListLink.style.backgroundColor = '#213b52' ;
+            });
+        });
 
 
 
-document.addEventListener('DOMContentLoaded', function () {
-        // Get the input element and table
-        var searchInput = document.getElementById('searchInput');
-        var holidayTable = document.getElementById('holidayTable');
 
-        // Add event listener for input changes
-        searchInput.addEventListener('input', function () {
-            var filter = searchInput.value.toLowerCase();
+        // search
+
+        document.addEventListener('DOMContentLoaded', function () {
+                // Get the input element and table
+                var searchInput = document.getElementById('searchInput');
+                var holidayTable = document.getElementById('holidayTable');
+
+                // Add event listener for input changes
+                searchInput.addEventListener('input', function () {
+                    var filter = searchInput.value.toLowerCase();
+                    var rows = holidayTable.getElementsByTagName('tr');
+
+                    // Loop through all table rows and hide/show based on search input
+                    for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+                        var row = rows[i];
+                        var columns = row.getElementsByTagName('td');
+                        var shouldShow = false;
+
+                        for (var j = 0; j < columns.length; j++) {
+                            var cellValue = columns[j].textContent.toLowerCase();
+                            if (cellValue.indexOf(filter) > -1) {
+                                shouldShow = true;
+                                break;
+                            }
+                        }
+
+                        // Hide or show the row based on the search result
+                        row.style.display = shouldShow ? '' : 'none';
+                    }
+                });
+            });
+
+
+
+
+        // sort
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the sort button, dropdown menu, and table
+            var sortButton = document.getElementById('sortButton2');
+            var sortDropdown = document.querySelector('dropdown-menu2');
+            var holidayTable = document.getElementById('holidayTable').getElementsByTagName('tbody')[0];
             var rows = holidayTable.getElementsByTagName('tr');
 
-            // Loop through all table rows and hide/show based on search input
-            for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
-                var row = rows[i];
-                var columns = row.getElementsByTagName('td');
-                var shouldShow = false;
+            // Define an object mapping month names to their numerical order
+            var monthOrder = {
+                'January': 1,
+                'February': 2,
+                'March': 3,
+                'April': 4,
+                'May': 5,
+                'June': 6,
+                'July': 7,
+                'August': 8,
+                'September': 9,
+                'October': 10,
+                'November': 11,
+                'December': 12
+            };
 
-                for (var j = 0; j < columns.length; j++) {
-                    var cellValue = columns[j].textContent.toLowerCase();
-                    if (cellValue.indexOf(filter) > -1) {
-                        shouldShow = true;
-                        break;
+            // Add event listener for sort button click
+            sortButton.addEventListener('click', function (event) {
+                event.stopPropagation(); // Prevents the document click event from closing the dropdown
+                // Toggle visibility of the dropdown menu
+                sortDropdown.classList.toggle('show');
+            });
+
+            // Add event listener to close the dropdown when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!sortButton.contains(event.target)) {
+                    sortDropdown.classList.remove('show');
+                }
+            });
+
+            // Add event listener for dropdown item click
+            var dropdownItems = document.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(function (item) {
+                item.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var sortValue = item.getAttribute('data-sort');
+                    sortTable(sortValue);
+                    // Close the dropdown menu
+                    sortDropdown.classList.remove('show');
+                });
+            });
+
+            // Function to sort table rows based on selected option
+            function sortTable(sortValue) {
+                // Sort the table rows based on the selected option
+                if (sortValue === 'month') {
+                    sortTableByMonth();
+                } else if (sortValue === 'year') {
+                    sortTableByColumn(2); // Sort by year (column index 2)
+                } else {
+                    // Reset the table to its original order
+                    for (var i = 0; i < rows.length; i++) {
+                        holidayTable.appendChild(rows[i]);
                     }
                 }
-
-                // Hide or show the row based on the search result
-                row.style.display = shouldShow ? '' : 'none';
             }
-        });
-    });
 
+            // Function to sort table rows by month
+            function sortTableByMonth() {
+                // Convert HTMLCollection to Array for sorting
+                var rowsArray = Array.prototype.slice.call(rows);
+                
+                // Sort the rows based on the numerical order of months
+                rowsArray.sort(function (a, b) {
+                    var monthA = a.getElementsByTagName('td')[0].textContent.trim();
+                    var monthB = b.getElementsByTagName('td')[0].textContent.trim();
+                    return monthOrder[monthA] - monthOrder[monthB];
+                });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Get the sort button, dropdown menu, and table
-        var sortButton = document.getElementById('sortButton2');
-        var sortDropdown = document.querySelector('dropdown-menu2');
-        var holidayTable = document.getElementById('holidayTable').getElementsByTagName('tbody')[0];
-        var rows = holidayTable.getElementsByTagName('tr');
-
-        // Define an object mapping month names to their numerical order
-        var monthOrder = {
-            'January': 1,
-            'February': 2,
-            'March': 3,
-            'April': 4,
-            'May': 5,
-            'June': 6,
-            'July': 7,
-            'August': 8,
-            'September': 9,
-            'October': 10,
-            'November': 11,
-            'December': 12
-        };
-
-        // Add event listener for sort button click
-        sortButton.addEventListener('click', function (event) {
-            event.stopPropagation(); // Prevents the document click event from closing the dropdown
-            // Toggle visibility of the dropdown menu
-            sortDropdown.classList.toggle('show');
-        });
-
-        // Add event listener to close the dropdown when clicking outside
-        document.addEventListener('click', function (event) {
-            if (!sortButton.contains(event.target)) {
-                sortDropdown.classList.remove('show');
-            }
-        });
-
-        // Add event listener for dropdown item click
-        var dropdownItems = document.querySelectorAll('.dropdown-item');
-        dropdownItems.forEach(function (item) {
-            item.addEventListener('click', function (event) {
-                event.preventDefault();
-                var sortValue = item.getAttribute('data-sort');
-                sortTable(sortValue);
-                // Close the dropdown menu
-                sortDropdown.classList.remove('show');
-            });
-        });
-
-        // Function to sort table rows based on selected option
-        function sortTable(sortValue) {
-            // Sort the table rows based on the selected option
-            if (sortValue === 'month') {
-                sortTableByMonth();
-            } else if (sortValue === 'year') {
-                sortTableByColumn(2); // Sort by year (column index 2)
-            } else {
-                // Reset the table to its original order
-                for (var i = 0; i < rows.length; i++) {
-                    holidayTable.appendChild(rows[i]);
+                // Re-append sorted rows to the table
+                for (var i = 0; i < rowsArray.length; i++) {
+                    holidayTable.appendChild(rowsArray[i]);
                 }
             }
-        }
+        });
 
-        // Function to sort table rows by month
-        function sortTableByMonth() {
-            // Convert HTMLCollection to Array for sorting
-            var rowsArray = Array.prototype.slice.call(rows);
-            
-            // Sort the rows based on the numerical order of months
-            rowsArray.sort(function (a, b) {
-                var monthA = a.getElementsByTagName('td')[0].textContent.trim();
-                var monthB = b.getElementsByTagName('td')[0].textContent.trim();
-                return monthOrder[monthA] - monthOrder[monthB];
+
+
+
+
+        // pdf
+
+        function ExportAsPDF() {
+            const container = document.getElementById('holidayList');
+
+            // Extract heading text from the original table
+            const headingText = document.getElementById('headDing').innerText;
+
+            // Save the original styles
+            const originalStyles = {
+                backgroundColor: container.style.backgroundColor,
+                color: container.style.color,
+            };
+
+            // Set the container's background color to white and text color to black for specific columns
+            const headerCells = container.querySelectorAll('thead th');
+            const dataCells = container.querySelectorAll('tbody td');
+
+            headerCells.forEach(cell => {
+                cell.style.backgroundColor = 'white';
+                cell.style.color = 'black';
             });
 
-            // Re-append sorted rows to the table
-            for (var i = 0; i < rowsArray.length; i++) {
-                holidayTable.appendChild(rowsArray[i]);
+            dataCells.forEach(cell => {
+                cell.style.backgroundColor = 'white';
+                cell.style.color = 'black';
+            });
+
+            // Identify and hide the last column from the HTML content
+            const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
+            Array.from(container.rows).forEach(row => {
+                row.cells[lastColumnIndex].style.display = 'none';
+            });
+
+            // Add margin to the PDF
+            const margin = 10; // Adjust as needed
+            const pdfOptions = {
+                margin: [margin, margin, margin, margin], // top, right, bottom, left
+                filename: "holiday_table.pdf",
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
+            };
+
+            // Generate PDF from the modified container
+            html2pdf().from(container).set(pdfOptions).toPdf().get('pdf').then(function(pdf) {
+                // Get the dimensions of the PDF page
+                const pageSize = pdf.internal.pageSize;
+                const pageWidth = pageSize.getWidth();
+                const pageHeight = pageSize.getHeight();
+
+                // Calculate the position for the heading
+                const headingWidth = pdf.getStringUnitWidth(headingText) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
+                const headingX = (pageWidth - headingWidth) / 2;
+                const headingY = margin;
+
+                // Add heading to the PDF with a break after it
+                pdf.setFontSize(16);
+                pdf.setFontStyle('bold');
+                pdf.text(headingText + "\n", headingX, headingY);
+
+                // Adjust the Y position for the content below the heading
+                const contentY = headingY + pdf.internal.getLineHeight();
+
+                // Save the PDF
+                pdf.save();
+
+                // Display the last column again after downloading the PDF
+                Array.from(container.rows).forEach(row => {
+                    row.cells[lastColumnIndex].style.display = '';
+                });
+
+                // Restore the original styles for specific columns
+                headerCells.forEach(cell => {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = originalStyles.color;
+                });
+
+                dataCells.forEach(cell => {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = originalStyles.color;
+                });
+
+                // Restore the original styles for the container
+                container.style.backgroundColor = originalStyles.backgroundColor;
+                container.style.color = originalStyles.color;
+            });
+        }
+
+
+
+
+
+
+
+        // print
+
+
+        function PrintTable() {
+            const container = document.getElementById('holidayList');
+            const heading = document.getElementById('headDing').innerText.trim();
+
+            // Create a new window
+            const printWindow = window.open('', '_blank');
+
+            // Write HTML content to the new window
+            printWindow.document.write('<html><head><title>' + heading + '</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('table { margin: 0 auto; }');
+            printWindow.document.write('table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }');
+            printWindow.document.write('th, td { color: black; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+
+            // Copy the heading content
+            printWindow.document.write('<h1 style="text-align: center; color: black;">' + heading + '</h1>');
+
+            // Copy the table content, excluding the last column
+            const tableCopy = container.cloneNode(true);
+            const lastColumnIndex = tableCopy.rows[0].cells.length - 1;
+            for (let i = 0; i < tableCopy.rows.length; i++) {
+                tableCopy.rows[i].deleteCell(lastColumnIndex);
             }
-        }
-    });
+            printWindow.document.write(tableCopy.outerHTML);
 
+            // Close the HTML content
+            printWindow.document.write('</body></html>');
 
+            printWindow.document.close();
 
+            // Print the new window
+            printWindow.print();
 
-
-
-
-
-    // share button
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     // Get the sort button, dropdown menu, and table
-    //     var shareButton = document.getElementById('shareButton');
-    //     var sortDropdown = document.querySelector('dropdown-menu3');
-
-    //     // Add event listener for sort button click
-    //     sortButton.addEventListener('click', function (event) {
-    //         event.stopPropagation(); // Prevents the document click event from closing the dropdown
-    //         // Toggle visibility of the dropdown menu
-    //         sortDropdown.classList.toggle('show');
-    //     });
-
-    //     // Add event listener to close the dropdown when clicking outside
-    //     document.addEventListener('click', function (event) {
-    //         if (!sortButton.contains(event.target)) {
-    //             sortDropdown.classList.remove('show');
-    //         }
-    //     });
-
-    //     // Add event listener for dropdown item click
-    //     var dropdownItems = document.querySelectorAll('.dropdown-item');
-    //     dropdownItems.forEach(function (item) {
-    //         item.addEventListener('click', function (event) {
-    //             event.preventDefault();
-    //             var sortValue = item.getAttribute('data-sort');
-    //             sortTable(sortValue);
-    //             // Close the dropdown menu
-    //             sortDropdown.classList.remove('show');
-    //         });
-    //     });
-
-    //     // Function to sort table rows based on selected option
-    //     function sortTable(sortValue) {
-    //         // Sort the table rows based on the selected option
-    //         if (sortValue === 'month') {
-    //             sortTableByMonth();
-    //         } else if (sortValue === 'year') {
-    //             sortTableByColumn(2); // Sort by year (column index 2)
-    //         } else {
-    //             // Reset the table to its original order
-    //             for (var i = 0; i < rows.length; i++) {
-    //                 holidayTable.appendChild(rows[i]);
-    //             }
-    //         }
-    //     }
-
-    //     // Function to sort table rows by month
-    //     function sortTableByMonth() {
-    //         // Convert HTMLCollection to Array for sorting
-    //         var rowsArray = Array.prototype.slice.call(rows);
-            
-    //         // Sort the rows based on the numerical order of months
-    //         rowsArray.sort(function (a, b) {
-    //             var monthA = a.getElementsByTagName('td')[0].textContent.trim();
-    //             var monthB = b.getElementsByTagName('td')[0].textContent.trim();
-    //             return monthOrder[monthA] - monthOrder[monthB];
-    //         });
-
-    //         // Re-append sorted rows to the table
-    //         for (var i = 0; i < rowsArray.length; i++) {
-    //             holidayTable.appendChild(rowsArray[i]);
-    //         }
-    //     }
-    // });
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // pdf
-
-function ExportAsPDF() {
-    console.log("Exporting as PDF...");
-    const container = document.getElementById('holidayList');
-
-    // Save the original styles
-    const originalStyles = {
-        backgroundColor: container.style.backgroundColor,
-        color: container.style.color,
-    };
-
-    // Set the container's background color to white and text color to black for specific columns
-    const headerCells = container.querySelectorAll('thead th');
-    const dataCells = container.querySelectorAll('tbody td');
-
-    headerCells.forEach(cell => {
-        cell.style.backgroundColor = 'white';
-        cell.style.color = 'black';
-    });
-
-    dataCells.forEach(cell => {
-        cell.style.backgroundColor = 'white';
-        cell.style.color = 'black';
-    });
-
-    // Identify and hide the last column from the HTML content
-    const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
-    Array.from(container.rows).forEach(row => {
-        row.cells[lastColumnIndex].style.display = 'none';
-    });
-
-    // Add margin to the PDF
-    const margin = 10; // Adjust as needed
-    const pdfOptions = {
-        margin: [margin, margin, margin, margin], // top, right, bottom, left
-        filename: "holiday_table.pdf",
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
-    };
-
-    // Generate PDF from the modified container
-    html2pdf().from(container).set(pdfOptions).save().then(() => {
-        // Display the last column again after downloading the PDF
-        Array.from(container.rows).forEach(row => {
-            row.cells[lastColumnIndex].style.display = '';
-        });
-
-        // Restore the original styles for specific columns
-        headerCells.forEach(cell => {
-            cell.style.backgroundColor = '';
-            cell.style.color = originalStyles.color;
-        });
-
-        dataCells.forEach(cell => {
-            cell.style.backgroundColor = '';
-            cell.style.color = originalStyles.color;
-        });
-
-        // Restore the original styles for the container
-        container.style.backgroundColor = originalStyles.backgroundColor;
-        container.style.color = originalStyles.color;
-    });
-}
-
-
-
-// print
-
-
-function PrintTable() {
-    const container = document.getElementById('holidayList');
-    const heading = document.querySelector('.container-flex h1');
-
-    // Create a new window
-    const printWindow = window.open('', '_blank');
-
-    // Write HTML content to the new window
-    printWindow.document.write('<html><head><title>Print</title>');
-    printWindow.document.write('</head><body>');
-
-    // Copy the heading content
-    printWindow.document.write('<h1 style="text-align: center;">All Holidays</h1>');
-
-    // Copy the table content, excluding the last column
-    const tableCopy = container.cloneNode(true);
-    const lastColumnIndex = tableCopy.rows[0].cells.length - 1;
-    for (let i = 0; i < tableCopy.rows.length; i++) {
-        tableCopy.rows[i].deleteCell(lastColumnIndex);
-    }
-    printWindow.document.write(tableCopy.outerHTML);
-
-    // Close the HTML content
-    printWindow.document.write('</body></html>');
-
-    printWindow.document.close();
-
-    // Print the new window
-    printWindow.print();
-
-    // Close the new window after a brief delay
-    setTimeout(function() {
-        printWindow.close();
-    }, 250); // Adjust the delay time as needed
-}
-
-
-
-
-
-
-
-//     const container = document.getElementById('holidayList');
-
-// // Save the original styles
-// const originalStyles = {
-//     backgroundColor: container.style.backgroundColor,
-//     color: container.style.color,
-// };
-
-// // Set the container's background color to white and text color to black for specific columns
-// const headerCells = container.querySelectorAll('thead th');
-// const dataCells = container.querySelectorAll('tbody td');
-
-// headerCells.forEach(cell => {
-//     cell.style.backgroundColor = 'white';
-//     cell.style.color = 'black';
-// });
-
-// dataCells.forEach(cell => {
-//     cell.style.backgroundColor = 'white';
-//     cell.style.color = 'black';
-// });
-
-// // Identify and hide the last column from the HTML content
-// const lastColumnIndex = container.rows[0].cells.length - 1; // Assuming the table has a header row
-// Array.from(container.rows).forEach(row => {
-//     row.cells[lastColumnIndex].style.display = 'none';
-// });
-
-// // Add margin to the PDF
-// const margin = 10; // Adjust as needed
-// const pdfOptions = {
-//     margin: [margin, margin, margin, margin], // top, right, bottom, left
-//     filename: "holiday_table.pdf",
-//     image: { type: 'jpeg', quality: 1 },
-//     html2canvas: { scale: 2 },
-//     jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }, // Adjust format and orientation
-// };
-
-// // Generate PDF from the modified container
-// html2pdf()
-//     .from(container)
-//     .set(pdfOptions)
-//     .output('datauristring') // Generate PDF as data URI string
-//     .then(pdfDataUri => {
-//         // Create a new iframe to hold the PDF content
-//         const iframe = document.createElement('iframe');
-//         iframe.style.display = 'none';
-//         document.body.appendChild(iframe);
-
-//         // Set the source of the iframe to the PDF data URI
-//         iframe.src = pdfDataUri;
-
-//         // Wait for the PDF to load in the iframe
-//         iframe.onload = () => {
-//             // Print the PDF
-//             iframe.contentWindow.print();
-
-//             // Cleanup: Remove the iframe after printing
-//             setTimeout(() => {
-//                 document.body.removeChild(iframe);
-//             }, 1000); // Delayed to ensure printing is complete
-//         };
-//     })
-//     .finally(() => {
-//         // Restore the original styles and display the last column after printing
-//         headerCells.forEach(cell => {
-//             cell.style.backgroundColor = '';
-//             cell.style.color = originalStyles.color;
-//         });
-
-//         dataCells.forEach(cell => {
-//             cell.style.backgroundColor = '';
-//             cell.style.color = originalStyles.color;
-//         });
-
-//         Array.from(container.rows).forEach(row => {
-//             row.cells[lastColumnIndex].style.display = '';
-//         });
-
-//         // Restore the original styles for the container
-//         container.style.backgroundColor = originalStyles.backgroundColor;
-//         container.style.color = originalStyles.color;
-//     });
-
-
-
-
-
-// document.addEventListener("DOMContentLoaded", function() {
-//     const shareOptions = document.querySelectorAll('.share-option');
-  
-//     shareOptions.forEach(function(option) {
-//         option.addEventListener('click', function(event) {
-//             event.preventDefault();
-//             const targetModal = document.querySelector(this.getAttribute('data-target'));
-//             $(targetModal).modal('show'); // Using jQuery for Bootstrap modal
-//         });
-//     });
-// });
-
-
-
-
-
-
-function SendAsPDF() {
-    var emailaddress = document.getElementById("exampleInputEmail1").value;
-    // Basic email validation could be added here
-
-    console.log("Exporting as PDF...");
-    const container = document.getElementById('holidayList');
-
-    // Save the original styles
-    const originalStyles = {
-        backgroundColor: container.style.backgroundColor,
-        color: container.style.color,
-    };
-
-    // Set styles for PDF generation
-    container.style.backgroundColor = 'white';
-    container.style.color = 'black';
-
-    // Hide the last column
-    const lastColumnIndex = container.rows[0].cells.length - 1; 
-    Array.from(container.rows).forEach(row => {
-        row.cells[lastColumnIndex].style.display = 'none';
-    });
-
-    // Generate the PDF
-    html2canvas(container).then(canvas => {
-        const pdf = new jsPDF('p', 'mm', 'a3');
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-        
-        try {
-            pdf.save("holiday_table.pdf");
-        } catch (error) {
-            console.error("Error while saving PDF:", error);
-            // Handle error appropriately
+            // Close the new window after a brief delay
+            setTimeout(function() {
+                printWindow.close();
+            }, 100); // Adjust the delay time as needed
         }
 
-        // Restore original styles
-        container.style.backgroundColor = originalStyles.backgroundColor;
-        container.style.color = originalStyles.color;
-
-        // Construct the URL to email view with PDF
-        var linkToEmailShare = '{% url "company_holiday_overview_email_send" %}?table_pdf=holiday_table.pdf & email=' + emailaddress;
-        console.log(linkToEmailShare);
-        window.location.href = linkToEmailShare;
-    }).catch(error => {
-        console.error("Error while generating PDF:", error);
-        // Handle error appropriately
-    });
-}
 
 
 
@@ -850,104 +666,27 @@ function SendAsPDF() {
 
 
 
+        // document.addEventListener("DOMContentLoaded", function() {
 
+        //     // Get the sort button, dropdown menu, and table
+        //     var shareButton = document.getElementById('shareButton');
+        //     var shareDropdown = document.querySelector('dropdown-menu3');
 
+        //     // Add event listener for share button click
+        //     shareButton.addEventListener('click', function (event) {
+        //         event.stopPropagation(); // Prevents the document click event from closing the dropdown
+        //         // Toggle visibility of the dropdown menu
+        //         shareDropdown.classList.toggle('show');
+        //     });
 
-function SendAsWhatsapp() {
-    var emailaddress = document.getElementById("exampleInputEmail1").value;
-    // Basic email validation could be added here
+        //     // Add event listener to close the dropdown when clicking outside
+        //     document.addEventListener('click', function (event) {
+        //         if (!shareButton.contains(event.target)) {
+        //             shareDropdown.classList.remove('show');
+        //         }
+        //     });
 
-    console.log("Exporting as PDF...");
-    const container = document.getElementById('holidayList');
-
-    // Save the original styles
-    const originalStyles = {
-        backgroundColor: container.style.backgroundColor,
-        color: container.style.color,
-    };
-
-    // Set styles for PDF generation
-    container.style.backgroundColor = 'white';
-    container.style.color = 'black';
-
-    // Hide the last column
-    const lastColumnIndex = container.rows[0].cells.length - 1; 
-    Array.from(container.rows).forEach(row => {
-        row.cells[lastColumnIndex].style.display = 'none';
-    });
-
-    // Generate the PDF
-    html2canvas(container).then(canvas => {
-        const pdf = new jsPDF('p', 'mm', 'a3');
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-        
-        try {
-            pdf.save("holiday_table.pdf");
-        } catch (error) {
-            console.error("Error while saving PDF:", error);
-            // Handle error appropriately
-        }
-
-        // Restore original styles
-        container.style.backgroundColor = originalStyles.backgroundColor;
-        container.style.color = originalStyles.color;
-
-        // Construct the URL to email view with PDF
-        var linkToEmailShare = '{% url "company_holiday_overview_whatsapp_send" %}?table_pdf=holiday_table.pdf&email=' + emailaddress;
-        window.location.href = linkToEmailShare;
-    }).catch(error => {
-        console.error("Error while generating PDF:", error);
-        // Handle error appropriately
-    });
-}
-
-document.getElementById('generatePDFLink').addEventListener('click', function(event) {
-        event.preventDefault(); // Prevent default behavior of the link
-        
-        generatePDFAndShare(); // Call the PDF generation and sharing function
-    });
-
-    function generatePDFAndShare() {
-        const doc = new jsPDF();
-
-        // Get the HTML table element
-        const table = document.getElementById('holidayList');
-
-        // Clone the table to preserve the original
-        const clonedTable = table.cloneNode(true);
-
-        // Remove the last column from the cloned table
-        const rows = clonedTable.getElementsByTagName('tr');
-        for (let i = 0; i < rows.length; i++) {
-            const cells = rows[i].getElementsByTagName('td');
-            if (cells.length > 0) {
-                rows[i].removeChild(cells[cells.length - 1]);
-            } else {
-                const thCells = rows[i].getElementsByTagName('th');
-                if (thCells.length > 0) {
-                    rows[i].removeChild(thCells[thCells.length - 1]);
-                }
-            }
-        }
-
-        // Convert modified table to PDF
-        doc.autoTable({ html: clonedTable });
-
-        // Get PDF as data URI
-        const pdfDataUri = doc.output('datauristring');
-
-        // Encode PDF data URI to base64
-        const base64Pdf = pdfDataUri.split(',')[1];
-
-        // Construct WhatsApp share message with PDF attachment
-        const message = 'Check out this PDF!';
-        const whatsappUrl = `whatsapp://send?text=${message}&data=${base64Pdf}`;
-
-        // Open WhatsApp with share message
-        window.location.href = whatsappUrl;
-    }
-
+        // });
 
 
 

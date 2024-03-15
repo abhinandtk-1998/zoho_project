@@ -35,7 +35,7 @@
           <div class="table-responsive">
             <div class="d-flex align-items-center">
               <input type="text" id="searchInput" placeholder="Search..." class="form-control mr-2 m-2 text-white">
-              <button class="btn btn-outline-secondary dropdown-toggle text-grey mr-2 m-2" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
+              <button class="btn btn-outline-warning dropdown-toggle text-yellow mr-2 m-2" type="button" id="sortButton2" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fas fa-sort"></i>
               </button>
               <ul class="dropdown-menu mr-2 m-2" id="dropdown-menu2" aria-labelledby="sortButton2">
@@ -43,9 +43,9 @@
                   <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
                   <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
               </ul>
-              <button onclick="exportToExcel()" class="btn btn-outline-secondary mr-2 text-grey m-2"><i class="fa fa-arrow-up"></i>Export</button>
-              <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-secondary mr-2 text-grey m-2"><i class="fa fa-arrow-down"></i> Import </a>
-              <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-secondary text-grey m-2"><i class="fa fa-plus text-yellow"></i>New</a>
+              <button onclick="exportToExcel()" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-up"></i>Export</button>
+              <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-down"></i> Import </a>
+              <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-warning text-yellow m-2"><i class="fa fa-plus text-yellow"></i>New</a>
           </div>
             <table class="table mt-lg-3 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
               <thead>

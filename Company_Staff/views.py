@@ -645,14 +645,20 @@ def company_holiday_import_operation(request):
                 if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=company_id).exists():
                     continue
                 
-                obj = Holiday(
+                h1 = Holiday(
                     holiday_name=row['title'],
                     start_date=row['s_date'],
                     end_date=row['e_date'],
                     user=login_d,
                     company=company_id,
                 )
-                obj.save()
+                h1.save()
+
+                today_date = date.today()
+                action_h = "Created"
+
+                history = Holiday_history(company=company_id,user=login_d,holiday=h1,date=today_date,action=action_h)
+                history.save()
 
             # Redirect to a success page or render a success message
             return redirect('company_holiday')
@@ -723,6 +729,8 @@ def company_holiday_overview(request):
                 st = 0
 
 
+    month_name = datetime.strptime(str(month), '%m').strftime('%B')
+
     login_id = request.session['login_id']
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
@@ -735,6 +743,7 @@ def company_holiday_overview(request):
         'holiday_table':holiday_table,
         'events':events,
         'event_table':event_table,
+        'month_name':month_name,
         'month':month,
         'year':year,
         'comments':comment,
@@ -747,14 +756,15 @@ def company_holiday_overview(request):
 def company_holiday_overview_delete(request,pk):
 
     h1 = Holiday.objects.get(id=pk)
-    history_h = Holiday_history.objects.get(holiday=pk)
+    history_h = Holiday_history.objects.filter(holiday=pk)
     date1 = h1.start_date
 
     year = date1.year
     month = date1.strftime("%B")
 
     h1.delete()
-    history_h.delete()
+    for h in history_h:
+        h.delete()
     
     return redirect('company_holiday_overview'.format(month, year))
 
@@ -769,6 +779,11 @@ def company_holiday_overview_edit(request,pk):
     return render(request, 'company/company_holiday_overview_edit.html',context)
 
 def company_holiday_overview_edit_op(request,pk):
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+
+
     if request.method=="POST":
         title=request.POST['title']
         s_date=request.POST['sdate']
@@ -781,10 +796,10 @@ def company_holiday_overview_edit_op(request,pk):
         holiday_d.end_date = e_date
 
         today_date = date.today()
+        action_h = "Edited"
 
-        history_h = Holiday_history.objects.get(holiday=pk)
-        history_h.date = today_date
-        history_h.action = "Edited"
+        history_h = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+        
 
         year = date1.year
         month = date1.strftime("%B")
@@ -820,40 +835,6 @@ def company_holiday_overview_comment_delete(request,pk):
     return redirect('company_holiday_overview')
         
 
-
-# def company_holiday_overview_send_email(request,pk):
-#     if request.method=="POST":
-#         email=request.POST['email']
-
-
-#         subject="Application for Freelancer Registration Received"
-#         message="Hai " + uname + ", Please wait for admin approval"
-#         recipient=eaddress
-
-#         send_mail(subject, message, settings.EMAIL_HOST_USER,[recipient])
-#         messages.info(request, 'Please wait for admin approval')
-
-
-#          # Generate PDF from HTML table
-#         html_table = render_to_string('company/company_holiday_overview.html', {'data': events})
-#         pdf_file = HTML(string=html_table).write_pdf()
-
-#         # Send email with PDF attachment
-#         email_subject = 'Subject for your email'
-#         email_body = 'Body for your email'
-
-#         message = EmailMessage(
-#             email_subject,
-#             email_body,
-#             'your_email@gmail.com',  # Sender's email address
-#             [email],  # Recipient's email address
-#             ['your_email@gmail.com'],  # Additional email addresses (if needed)
-#         )
-
-#         message.attach('table_data.pdf', pdf_file, 'application/pdf')
-#         message.send()
-
-#         return HttpResponse("Email sent successfully")
 
 
 def company_holiday_overview_email_send(request):
@@ -949,107 +930,13 @@ def company_holiday_overview_email_send(request):
 
 
 
-
-
-
-def company_holiday_overview_send_email(request):
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    # month = request.GET.get('mn')
-    year = request.GET.get('yr')
-    month = request.GET.get('mn')
-
-    if request.method=="POST":
-        eaddress=request.POST['email']
-        # Fetch data from the database
-        data = Holiday.objects.filter(user=login_d,company=company_id,start_date__year=year,start_date__month=month)
-
-        # Render the data in a template
-        template = get_template('company/company_holiday_overview.html')
-        context = {'data': data}
-        html = template.render(context)
-
-        # Use BeautifulSoup to extract the desired table
-        soup = BeautifulSoup(html, 'html.parser')
-        table_html = soup.find('table', {'id': 'holidayList'}).prettify()
-
-        # Create a PDF file
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="table.pdf"'
-
-        # Convert extracted HTML to PDF
-        pisa_status = pisa.CreatePDF(table_html, dest=response)
-        if pisa_status.err:
-            return HttpResponse('Failed to generate PDF: %s' % pisa_status.err)
-
-        # Send PDF as an email attachment
-        # Send email with attached PDF
-        subject = "Holiday List"
-        message = "Holiday List"
-        recipient = eaddress
-        pdf_data = BytesIO()
-
-
-        email = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[recipient]
-        )
-        email.attach('table.pdf', pdf_data.getvalue(), 'application/pdf')
-        email.send()
-
-        return redirect('company_holiday_overview')
     
 
-# def company_holiday_overview_email_send(request):
-
-
-
-#     eaddress = request.GET.get('email')
-
-#     # Retrieve the PDF file from the request
-#     pdf_file = request.FILES.get('table_pdf')
-
-#     subject = "Holiday List"
-#     message = "Please find the attached holiday list."
-#     recipient = eaddress
-
-#     email = EmailMessage(
-#         subject=subject,
-#         body=message,
-#         from_email=settings.EMAIL_HOST_USER,
-#         to=[recipient]
-#     )
-    
-#     # Attach the PDF file to the email
-#     email.attach(pdf_file.name, pdf_file.read(), 'application/pdf')
-
-#     try:
-#         # Send the email
-#         email.send()
-#     except Exception as e:
-#         # Handle email sending error
-#         # You might want to log the error or provide user feedback
-#         print("Error sending email:", e)
-#         return redirect('company_holiday_overview')
-
-#     # Redirect with success message
-#     # You might want to provide feedback to the user indicating that the email was sent successfully
-#     return redirect('company_holiday_overview')
-
-def company_holiday_overview_whatsapp_send(request):
-    url = "whatsapp://send?text=Check out this awesome content: {}.".format(request.build_absolute_uri())
-    return redirect(url)
 
 
 
 
 
-
-
-    
 
 
 # -------------------------------Staff section--------------------------------
