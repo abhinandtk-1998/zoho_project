@@ -31,6 +31,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.styles import ParagraphStyle
+from django.urls import reverse
 # from django.views import View
 # from weasyprint import HTML
 
@@ -595,13 +596,18 @@ def company_holiday(request):
 
 
 def company_holiday_new(request):
-    return render(request,'company/company_holiday_new.html')
+    n = request.GET.get('n')
+    context = {
+        'n':n,
+    }
+    return render(request,'company/company_holiday_new.html', context)
 
 def company_holiday_new_add(request):
     login_id = request.session['login_id']
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
     if request.method=="POST":
+        dest=request.POST['destination']
         title=request.POST['title']
         s_date=request.POST['sdate']
         e_date=request.POST['edate']
@@ -618,10 +624,16 @@ def company_holiday_new_add(request):
 
         history = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
         history.save()
+
+        dest1 = int(dest)
+
+        if dest1 == 1:
+            return redirect('company_holiday_overview')
         
-        return redirect('company_holiday')
+        else:
+            return redirect('company_holiday')
     
-    return redirect('/')
+    return redirect('company_holiday_new')
 
 
 def company_holiday_import(request):
@@ -668,18 +680,45 @@ def company_holiday_import_operation(request):
 
 def company_holiday_overview(request):
 
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+    comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
+    holiday_history = Holiday_history.objects.filter(user=login_d, company=company_id)
+
     mn = request.GET.get('month')
     yr = request.GET.get('year')
+    togd = request.GET.get('togd')
+
+    holiday2 = Holiday.objects.filter(user=login_d, company=company_id)
+
+    for h3 in holiday2:
+        mn2 = h3.start_date.strftime("%B")
+        yr2 = h3.start_date.year
+        break
+    
 
     if mn is None:
-        mn = "January"
+        mn = mn2
     if yr is None:
-        yr = 2024
+        yr = yr2
 
     month = datetime.strptime(mn, '%B').month
     year = int(yr)
 
     events = Holiday.objects.filter(start_date__month=month,start_date__year=year)
+
+    event_list = {}
+
+    k = 1
+    for e1 in events:
+        current_date = e1.start_date
+        while current_date <= e1.end_date:
+            event_list[k] = [k, e1.holiday_name, current_date ]
+            k = k + 1
+            current_date += timedelta(days=1)
+        
+
 
     event_table = {}
     j = 1
@@ -731,23 +770,21 @@ def company_holiday_overview(request):
 
     month_name = datetime.strptime(str(month), '%m').strftime('%B')
 
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
-    holiday_history = Holiday_history.objects.filter(user=login_d, company=company_id)
+    
 
     
 
     context = {
         'holiday_table':holiday_table,
         'events':events,
+        'event_list':event_list,
         'event_table':event_table,
         'month_name':month_name,
         'month':month,
         'year':year,
         'comments':comment,
         'holiday_history':holiday_history,
+        'togd':togd,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
@@ -759,14 +796,16 @@ def company_holiday_overview_delete(request,pk):
     history_h = Holiday_history.objects.filter(holiday=pk)
     date1 = h1.start_date
 
-    year = date1.year
-    month = date1.strftime("%B")
+    year1 = date1.year
+    month1 = date1.strftime("%B")
 
     h1.delete()
     for h in history_h:
         h.delete()
+
+    togd=1
     
-    return redirect('company_holiday_overview'.format(month, year))
+    return redirect(reverse('company_holiday_overview') + f'?month={month1}&year={year1}&togd={togd}')
 
 
 def company_holiday_overview_edit(request,pk):
@@ -801,16 +840,17 @@ def company_holiday_overview_edit_op(request,pk):
         history_h = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
         
 
-        year = date1.year
-        month = date1.strftime("%B")
+        year1 = date1.year
+        month1 = date1.strftime("%B")
 
         holiday_d.save()
         history_h.save()
+        togd = 1
 
         
-        return redirect('company_holiday_overview'.format(month, year))
+        return redirect(reverse('company_holiday_overview') + f'?month={month1}&year={year1}&togd={togd}')
     
-    return redirect('/')
+    return redirect('company_holiday_overview_edit')
 
 def company_holiday_overview_comment(request,pk):
     login_id = request.session['login_id']

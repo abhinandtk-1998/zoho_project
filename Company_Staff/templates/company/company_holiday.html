@@ -45,7 +45,7 @@
               </ul>
               <button onclick="exportToExcel()" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-up"></i>Export</button>
               <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-down"></i> Import </a>
-              <a href="{% url 'company_holiday_new' %}" class="btn btn-outline-warning text-yellow m-2"><i class="fa fa-plus text-yellow"></i>New</a>
+              <a href="{% url 'company_holiday_new' %}?n=0" class="btn btn-outline-warning text-yellow m-2"><i class="fa fa-plus text-yellow"></i>New</a>
           </div>
             <table class="table mt-lg-3 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
               <thead>
