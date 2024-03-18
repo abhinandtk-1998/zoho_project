@@ -17,7 +17,7 @@
             <div class="row">
                 <div class="col-md-7 offset-md-2">
                     <h1 class="text-center text-white mb-3">Edit Holiday</h1>
-                    <form method="post" action="{% url 'company_holiday_overview_edit_op' holiday.id %}" enctype="multipart/form-data">
+                    <form method="post" action="{% url 'company_holiday_overview_edit_op' holiday.id %}?month={{month}}&year={{year}}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group row mb-4">
                         <label for="name" class="col-sm-3 col-form-label text-white">Title</label>

@@ -584,11 +584,11 @@
                 <hr>
                 {% endif %}
                 {% if allmodules.holiday == 1  %}
-                <a href="" class="d-flex align-items-center gap-2 dropdown-item">
+                <a href="{% url 'company_holiday' %}" class="d-flex align-items-center gap-2 dropdown-item">
                  
                   <div class="d-flex">
                     <p class="mb-0 fs-3">Holiday</p>
-                    <a href="{% url 'company_holiday' %}"><i class="fa fa-plus text-white" ></i></a>
+                    <a href="{% url 'company_holiday_new' %}"><i class="fa fa-plus text-white" ></i></a>
                   </div>
                  
                 </a>

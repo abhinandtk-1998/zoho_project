@@ -64,6 +64,10 @@
         background-color: #ddd;
     }
 
+    #searchInput {
+        border: 1px solid orange;
+    }
+
 
     
 </style>
@@ -71,13 +75,20 @@
 <body>
     <div class="body-wrapper">
         <div class="container-fluid container-flex">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'company_holiday' %}" class="text-warning-emphasis">Holiday</a></li>
+                  <li class="breadcrumb-item" aria-current="page">Overview</li>
+                </ol>
+            </nav>
             <div class="row">
                 <div class="col-sm-4">
                         <div style="overflow-x:auto;" class="section" id="section1">
                             <h1 class="text-center text-white">All Holidays</h1>
                             <div class="table-responsive">
                                 <div class="mb-3">
-                                    <input type="text" id="searchInput" class="form-control text-white" placeholder="Type to search">
+                                    <input type="text" id="searchInput" class="form-control text-white btn-outline-warning" placeholder="Type to search">
                                 </div>
                                 <div class="mb-3 d-flex align-items-center">
                                     <div class="dropdown me-2">
@@ -85,9 +96,9 @@
                                             <i class="fas fa-sort"></i>
                                         </button>
                                         <ul class="dropdown-menu" id="dropdown-menu2" aria-labelledby="sortButton2">
-                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="all">All</a></li>
-                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="month">Month</a></li>
-                                            <li><a class="dropdown-item" id="dropdown-item2" href="#" data-sort="year">Year</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="all">All</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="month">Month</a></li>
+                                            <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="year">Year</a></li>
                                         </ul>
                                     </div>
                                     <a href="{% url 'company_holiday_new' %}?n=1" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-plus text-yellow"></i> New Holiday</a>
@@ -137,7 +148,7 @@
                                                     <i class="fa fa-share"></i>Share
                                                 </button>
                                                 <ul class="dropdown-menu" id="dropdown-menu3" aria-labelledby="shareButton">
-                                                    <li><a class="dropdown-item1 text-grey" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
+                                                    <li><a class="dropdown-item1" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
                                                     <li><a class="dropdown-item1" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
                                                 </ul>
                                             </div>
@@ -161,7 +172,7 @@
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Email address</label>
-                                                                <input type="email" class="form-control mb-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
+                                                                <input type="email" class="form-control mb-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email" required>
                                                             </div>
                                                             <button type="submit" class="btn btn-primary">Share</button>
                                                         </form>
@@ -192,8 +203,8 @@
                                                     <td style="text-transform: capitalize;">{{ row.1 }}</td>
                                                     <td>{{ row.2 }}</td>
                                                     <td>{{ row.3 }}</td>
-                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
-                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}" style="color:yellow;"><i class="fa fa-edit"></i></a>
+                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
+                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" style="color:yellow;"><i class="fa fa-edit"></i></a>
                                                         <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" style="color: blue;"><i class="fa fa-comment"></i></a>
                                                         <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history"><i class="fa fa-history"></i></a>
 
@@ -220,7 +231,7 @@
                                                                             {% if c.holiday_details.id == row.4 %}
                                                                             <tr class="border-bottom border-dark">
                                                                                 <td>{{c.comment}}</td>
-                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}"><i class="fa fa-trash"></i></a></td>
+                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{month}}&year={{year}}"><i class="fa fa-trash"></i></a></td>
                                                                             </tr>
                                                                             {% endif %}
                                                                             {% endfor %}
@@ -229,10 +240,10 @@
                                                                 </div> 
                                                                 
 
-                                                                <form action="{% url 'company_holiday_overview_comment' row.4 %}" method="post">
+                                                                <form action="{% url 'company_holiday_overview_comment' row.4 %}?month={{month}}&year={{year}}" method="post">
                                                                     {% csrf_token %}
                                                                 <div class="modal-body">
-                                                                    <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control"></textarea></div><br>
+                                                                    <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control text-white" required></textarea></div><br>
                                                                 
                                                                 </div>
                                                                 <div class="modal-footer">
@@ -364,7 +375,7 @@
             var togdValue = document.getElementById('togd-value').getAttribute('data-togd');
         
             var tog = togdValue; // Example value, replace with your actual value
-            if (tog === 1) {
+            if (tog == 1) {
                 calendarDiv.style.display = "none";
                 holidayListDiv.style.display = "block";
                 holidayListLink.classList.add("active");
@@ -476,7 +487,7 @@
             });
 
             // Add event listener for dropdown item click
-            var dropdownItems = document.querySelectorAll('.dropdown-item');
+            var dropdownItems = document.querySelectorAll('dropdown-itemsort');
             dropdownItems.forEach(function (item) {
                 item.addEventListener('click', function (event) {
                     event.preventDefault();
@@ -493,7 +504,9 @@
                 if (sortValue === 'month') {
                     sortTableByMonth();
                 } else if (sortValue === 'year') {
-                    sortTableByColumn(2); // Sort by year (column index 2)
+                    sortTableByColumn(1); // Sort by year (column index 1)
+                } else if (sortValue === 'all') {
+                    sortTableByYearAndMonth();
                 } else {
                     // Reset the table to its original order
                     for (var i = 0; i < rows.length; i++) {
@@ -519,7 +532,48 @@
                     holidayTable.appendChild(rowsArray[i]);
                 }
             }
+
+            // Function to sort table rows by column index
+            function sortTableByColumn(columnIndex) {
+                var rowsArray = Array.prototype.slice.call(rows);
+
+                rowsArray.sort(function (a, b) {
+                    var yearA = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+                    var yearB = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+                    return yearA - yearB; // Assuming the years are numeric values
+                });
+
+                for (var i = 0; i < rowsArray.length; i++) {
+                    holidayTable.appendChild(rowsArray[i]);
+                }
+            }
+
+            // Function to sort table rows by year and month
+            function sortTableByYearAndMonth() {
+                // Convert HTMLCollection to Array for sorting
+                var rowsArray = Array.prototype.slice.call(rows);
+                
+                // Sort the rows based on year and month
+                rowsArray.sort(function (a, b) {
+                    var yearA = a.getElementsByTagName('td')[1].textContent.trim(); // Assuming year is in the second column
+                    var yearB = b.getElementsByTagName('td')[1].textContent.trim();
+                    if (yearA !== yearB) {
+                        return yearA - yearB; // Sort by year first
+                    } else {
+                        var monthA = a.getElementsByTagName('td')[0].textContent.trim(); // Assuming month is in the first column
+                        var monthB = b.getElementsByTagName('td')[0].textContent.trim();
+                        return monthOrder[monthA] - monthOrder[monthB]; // If years are equal, sort by month
+                    }
+                });
+
+                // Re-append sorted rows to the table
+                for (var i = 0; i < rowsArray.length; i++) {
+                    holidayTable.appendChild(rowsArray[i]);
+                }
+            }
+
         });
+
 
 
 

@@ -3,6 +3,15 @@
 {% load static %}
 
 
+<!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Include jQuery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
 <style>
     table tr td:hover {
     cursor: pointer;
@@ -17,6 +26,19 @@
 
   .form-control{
     width: 250px;
+  }
+
+  .modal-content {
+        background-color: rgb(41, 37, 37);/* Modal content background color */
+        width: 80%; /* Adjust width as needed */
+        max-width: 1000px; /* Maximum width */
+        margin: 20px auto; /* Center modal horizontally */
+        padding: 20px;
+        color: white;
+    }
+
+  #searchInput {
+      border: 1px solid orange;
   }
 </style>
 
@@ -39,12 +61,43 @@
                   <i class="fas fa-sort"></i>
               </button>
               <ul class="dropdown-menu mr-2 m-2" id="dropdown-menu2" aria-labelledby="sortButton2">
-                  <li><a class="dropdown-item" href="#" data-sort="all">All</a></li>
-                  <li><a class="dropdown-item" href="#" data-sort="month">Month</a></li>
-                  <li><a class="dropdown-item" href="#" data-sort="year">Year</a></li>
+                  <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="all">All</a></li>
+                  <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="month">Month</a></li>
+                  <li><a class="dropdown-item" id="dropdown-itemsort" href="#" data-sort="year">Year</a></li>
               </ul>
               <button onclick="exportToExcel()" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-up"></i>Export</button>
-              <a href="{% url 'company_holiday_import' %}" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-down"></i> Import </a>
+              <button data-toggle="modal" data-target="#importModal" class="btn btn-outline-warning mr-2 text-yellow m-2"><i class="fa fa-arrow-down"></i> Import </button>
+                <!-- import Modal -->
+                <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="emailModalLabel" style="color: white;">Import Holidays</h5>
+                              <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true">&times;</span>
+                          </div>
+                          <div class="modal-body">
+                            <form method="post" action="{% url 'company_holiday_import_operation' %}" enctype="multipart/form-data">
+                              {% csrf_token %}
+                              <div class="form-group row mb-4">
+                                  <label for="name" class="col-sm-3 col-form-label text-white">Select File</label>
+                                  <div class="col-sm-9">
+                                      <input type="file" class="form-control text-white" id="title" name="file" required>
+                                  </div>
+                              </div>
+                              <div class="form-group row">
+                                  <div class="col-sm-9 offset-sm-3">
+                                      <button type="submit" class="btn btn-primary">Import</button>
+                                  </div>
+                              </div>
+                          </form>
+                              
+                          </div>
+                      </div>
+                  </div>
+                </div>
+                <!-- Modal Ends -->
+
               <a href="{% url 'company_holiday_new' %}?n=0" class="btn btn-outline-warning text-yellow m-2"><i class="fa fa-plus text-yellow"></i>New</a>
           </div>
             <table class="table mt-lg-3 rounded" style="background-color: rgb(0, 0, 0);color: white;" id="myTable">
@@ -88,83 +141,83 @@
 
 
 
+      // sort function
+      document.addEventListener('DOMContentLoaded', function () {
+          var sortButton = document.getElementById('sortButton2');
+          var sortDropdown = document.querySelector('dropdown-menu2');
+          var holidayTable = document.getElementById('myTable').getElementsByTagName('tbody')[0];
+          var rows = holidayTable.getElementsByTagName('tr');
 
-document.addEventListener('DOMContentLoaded', function () {
-    var sortButton = document.getElementById('sortButton2');
-    var sortDropdown = document.querySelector('dropdown-menu2');
-    var holidayTable = document.getElementById('myTable').getElementsByTagName('tbody')[0];
-    var rows = holidayTable.getElementsByTagName('tr');
+          sortButton.addEventListener('click', function (event) {
+              event.stopPropagation();
+              sortDropdown.classList.toggle('show');
+          });
 
-    sortButton.addEventListener('click', function (event) {
-        event.stopPropagation();
-        sortDropdown.classList.toggle('show');
-    });
+          document.addEventListener('click', function (event) {
+              if (!sortButton.contains(event.target)) {
+                  sortDropdown.classList.remove('show');
+              }
+          });
 
-    document.addEventListener('click', function (event) {
-        if (!sortButton.contains(event.target)) {
-            sortDropdown.classList.remove('show');
-        }
-    });
+          var dropdownItems = document.querySelectorAll('dropdown-itemsort');
+          dropdownItems.forEach(function (item) {
+              item.addEventListener('click', function (event) {
+                  event.preventDefault();
+                  var sortValue = item.getAttribute('data-sort');
+                  sortTable(sortValue);
+                  sortDropdown.classList.remove('show');
+              });
+          });
 
-    var dropdownItems = document.querySelectorAll('.dropdown-item');
-    dropdownItems.forEach(function (item) {
-        item.addEventListener('click', function (event) {
-            event.preventDefault();
-            var sortValue = item.getAttribute('data-sort');
-            sortTable(sortValue);
-            sortDropdown.classList.remove('show');
-        });
-    });
+          function sortTable(sortValue) {
+              if (sortValue === 'month') {
+                  sortTableByMonth();
+              } else if (sortValue === 'year') {
+                  sortTableByColumn(2); // Assuming year is in the third column (index 2)
+              } else if (sortValue === 'all') {
+                  sortTableByColumn(0); // Sorting by the first column (Sl no.)
+              } else {
+                  resetTable();
+              }
+          }
 
-    function sortTable(sortValue) {
-        if (sortValue === 'month') {
-            sortTableByMonth();
-        } else if (sortValue === 'year') {
-            sortTableByColumn(2); // Assuming year is in the third column (index 2)
-        } else if (sortValue === 'all') {
-            sortTableByColumn(0); // Sorting by the first column (Sl no.)
-        } else {
-            resetTable();
-        }
-    }
+          function sortTableByMonth() {
+              var rowsArray = Array.prototype.slice.call(rows);
+              rowsArray.sort(function (a, b) {
+                  var monthA = getMonthIndex(a.cells[1].textContent.trim());
+                  var monthB = getMonthIndex(b.cells[1].textContent.trim());
+                  return monthA - monthB;
+              });
+              reAppendRows(rowsArray);
+          }
 
-    function sortTableByMonth() {
-        var rowsArray = Array.prototype.slice.call(rows);
-        rowsArray.sort(function (a, b) {
-            var monthA = getMonthIndex(a.cells[1].textContent.trim());
-            var monthB = getMonthIndex(b.cells[1].textContent.trim());
-            return monthA - monthB;
-        });
-        reAppendRows(rowsArray);
-    }
+          function sortTableByColumn(columnIndex) {
+              var rowsArray = Array.prototype.slice.call(rows);
+              rowsArray.sort(function (a, b) {
+                  var valueA = a.cells[columnIndex].textContent.trim();
+                  var valueB = b.cells[columnIndex].textContent.trim();
+                  return valueA.localeCompare(valueB);
+              });
+              reAppendRows(rowsArray);
+          }
 
-    function sortTableByColumn(columnIndex) {
-        var rowsArray = Array.prototype.slice.call(rows);
-        rowsArray.sort(function (a, b) {
-            var valueA = a.cells[columnIndex].textContent.trim();
-            var valueB = b.cells[columnIndex].textContent.trim();
-            return valueA.localeCompare(valueB);
-        });
-        reAppendRows(rowsArray);
-    }
+          function resetTable() {
+              for (var i = 0; i < rows.length; i++) {
+                  holidayTable.appendChild(rows[i]);
+              }
+          }
 
-    function resetTable() {
-        for (var i = 0; i < rows.length; i++) {
-            holidayTable.appendChild(rows[i]);
-        }
-    }
+          function reAppendRows(sortedRows) {
+              for (var i = 0; i < sortedRows.length; i++) {
+                  holidayTable.appendChild(sortedRows[i]);
+              }
+          }
 
-    function reAppendRows(sortedRows) {
-        for (var i = 0; i < sortedRows.length; i++) {
-            holidayTable.appendChild(sortedRows[i]);
-        }
-    }
-
-    function getMonthIndex(monthName) {
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        return months.indexOf(monthName);
-    }
-});
+          function getMonthIndex(monthName) {
+              const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              return months.indexOf(monthName);
+          }
+      });
 
 
 

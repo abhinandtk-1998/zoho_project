@@ -32,6 +32,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.styles import ParagraphStyle
 from django.urls import reverse
+from reportlab.platypus import Spacer
 # from django.views import View
 # from weasyprint import HTML
 
@@ -530,13 +531,25 @@ def company_trial_feedback(request):
     else:
         return redirect('/')
     
+#company holiday
     
 def company_holiday(request):
+
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    company_id = CompanyDetails.objects.get(login_details=login_d)
+
+    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+    
 
     month_list = []
     year_list = []
     date_list = []
-    holiday_list = Holiday.objects.all()
+
+    holiday_list = Holiday.objects.filter(user=login_d, company=company_id)
+
+    # making list of all dates which are hoidays
     for d in holiday_list:
         current_date = d.start_date
         while current_date <= d.end_date:
@@ -589,6 +602,8 @@ def company_holiday(request):
 
     context = {
         'holiday_table':holiday_table,
+        'details': dash_details,
+        'allmodules': allmodules,
     }
 
         
@@ -596,9 +611,17 @@ def company_holiday(request):
 
 
 def company_holiday_new(request):
+    # value of n deside holiday page or overview page after holiday addition
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+
     n = request.GET.get('n')
     context = {
         'n':n,
+        'details': dash_details,
+        'allmodules': allmodules,
     }
     return render(request,'company/company_holiday_new.html', context)
 
@@ -627,17 +650,16 @@ def company_holiday_new_add(request):
 
         dest1 = int(dest)
 
+        # to overview page
         if dest1 == 1:
             return redirect('company_holiday_overview')
         
+        #to holiday page
         else:
             return redirect('company_holiday')
     
     return redirect('company_holiday_new')
 
-
-def company_holiday_import(request):
-    return render(request, 'company/company_holiday_import.html')
 
 def company_holiday_import_operation(request):
     login_id = request.session['login_id']
@@ -685,9 +707,13 @@ def company_holiday_overview(request):
     company_id = CompanyDetails.objects.get(login_details=login_d)
     comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
     holiday_history = Holiday_history.objects.filter(user=login_d, company=company_id)
+    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
 
     mn = request.GET.get('month')
     yr = request.GET.get('year')
+
+    #default view of tab view depend on togd, 1-list, else-calendar
     togd = request.GET.get('togd')
 
     holiday2 = Holiday.objects.filter(user=login_d, company=company_id)
@@ -702,11 +728,15 @@ def company_holiday_overview(request):
         mn = mn2
     if yr is None:
         yr = yr2
+        
+    try:
+        month = datetime.strptime(mn, '%B').month
+    except:
+        month = mn
 
-    month = datetime.strptime(mn, '%B').month
     year = int(yr)
 
-    events = Holiday.objects.filter(start_date__month=month,start_date__year=year)
+    events = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, user=login_d, company=company_id) | Q(end_date__month=month, end_date__year=year, user=login_d, company=company_id))
 
     event_list = {}
 
@@ -730,7 +760,7 @@ def company_holiday_overview(request):
     month_list = []
     year_list = []
     date_list = []
-    holiday_list = Holiday.objects.all()
+    holiday_list = Holiday.objects.filter(user=login_d, company=company_id)
     for d in holiday_list:
         current_date = d.start_date
         while current_date <= d.end_date:
@@ -785,6 +815,8 @@ def company_holiday_overview(request):
         'comments':comment,
         'holiday_history':holiday_history,
         'togd':togd,
+        'details': dash_details,
+        'allmodules': allmodules,
     }
 
     return render(request, 'company/company_holiday_overview.html',context)
@@ -794,10 +826,9 @@ def company_holiday_overview_delete(request,pk):
 
     h1 = Holiday.objects.get(id=pk)
     history_h = Holiday_history.objects.filter(holiday=pk)
-    date1 = h1.start_date
 
-    year1 = date1.year
-    month1 = date1.strftime("%B")
+    year1 = request.GET.get('year')
+    month1 = request.GET.get('month')
 
     h1.delete()
     for h in history_h:
@@ -809,11 +840,23 @@ def company_holiday_overview_delete(request,pk):
 
 
 def company_holiday_overview_edit(request,pk):
+    
+    login_id = request.session['login_id']
+    login_d = LoginDetails.objects.get(id=login_id)
+    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+
+    year = request.GET.get('year')
+    month = request.GET.get('month')
 
     h1 = Holiday.objects.get(id=pk)
     context = {
         'id':pk,
         'holiday':h1,
+        'month':month,
+        'year':year,
+        'details': dash_details,
+        'allmodules': allmodules,
     }
     return render(request, 'company/company_holiday_overview_edit.html',context)
 
@@ -822,6 +865,9 @@ def company_holiday_overview_edit_op(request,pk):
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
 
+    year = request.GET.get('year')
+    month = request.GET.get('month')
+
 
     if request.method=="POST":
         title=request.POST['title']
@@ -829,7 +875,6 @@ def company_holiday_overview_edit_op(request,pk):
         e_date=request.POST['edate']
 
         holiday_d = Holiday.objects.get(id=pk)
-        date1 = holiday_d.start_date
         holiday_d.holiday_name = title
         holiday_d.start_date = s_date
         holiday_d.end_date = e_date
@@ -840,15 +885,13 @@ def company_holiday_overview_edit_op(request,pk):
         history_h = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
         
 
-        year1 = date1.year
-        month1 = date1.strftime("%B")
 
         holiday_d.save()
         history_h.save()
         togd = 1
 
         
-        return redirect(reverse('company_holiday_overview') + f'?month={month1}&year={year1}&togd={togd}')
+        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
     
     return redirect('company_holiday_overview_edit')
 
@@ -856,6 +899,12 @@ def company_holiday_overview_comment(request,pk):
     login_id = request.session['login_id']
     login_d = LoginDetails.objects.get(id=login_id)
     company_id = CompanyDetails.objects.get(login_details=login_d)
+
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+
+    togd = 1
+
     if request.method=='POST':
         comment=request.POST['comment']
 
@@ -864,15 +913,18 @@ def company_holiday_overview_comment(request,pk):
         c1 = Comment_holiday(holiday_details=holiday, comment=comment, user=login_d, company=company_id)
         c1.save()
 
-        return redirect('company_holiday_overview')
+        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
     
-    return redirect('company_holiday_overview')
+    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
 
 def company_holiday_overview_comment_delete(request,pk):
+    month = request.GET.get('month')
+    year = request.GET.get('year')
     c1 = Comment_holiday.objects.get(id=pk)
     c1.delete()
+    togd = 1
 
-    return redirect('company_holiday_overview')
+    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
         
 
 
@@ -884,6 +936,7 @@ def company_holiday_overview_email_send(request):
     company_id = CompanyDetails.objects.get(login_details=login_d)
     month = request.GET.get('mn')
     year = request.GET.get('yr')
+    month_name = calendar.month_name[int(month)]
     
     if request.method=="POST":
         eaddress=request.POST['email']
@@ -900,8 +953,8 @@ def company_holiday_overview_email_send(request):
         doc = SimpleDocTemplate(pdf_file_name, pagesize=letter)
 
          # Create a heading
-        heading_text = "<b>Holiday Overview</b>"
-        heading_style = ParagraphStyle(name='Heading1', alignment=1)
+        heading_text = f"<b> {month_name} {year}</b>"
+        heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
         heading = Paragraph(heading_text, heading_style)
 
         # Create a list to hold all the data rows
@@ -925,24 +978,29 @@ def company_holiday_overview_email_send(request):
             table_data.append(row)
 
     
-    
 
         # Create a table from the data
         table = Table(table_data)
 
         # Style the table
-        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
+        ])
 
         table.setStyle(style)
 
+        # Add space before the table
+        spacer = Spacer(1, 20)  # Add 20 points of space before the table
+
         # Build the PDF document
-        elements = [heading, table]
+        elements = [heading, spacer, table]
         doc.build(elements)
 
 
@@ -966,7 +1024,9 @@ def company_holiday_overview_email_send(request):
 
         email.send()
 
-        return redirect('company_holiday_overview')
+        togd = 1
+
+        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
 
 
 
