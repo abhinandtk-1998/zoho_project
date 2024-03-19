@@ -2,21 +2,39 @@
 {% block content %}
 {% load static %}
 
+<style>
+    input {
+        color-scheme: dark;
+    }
+</style>
+
 <body>
     <div class="body-wrapper">
         <div class="container-fluid">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-                  <li class="breadcrumb-item" aria-current="page">Holiday</li>
+                    <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'company_holiday' %}" class="text-warning-emphasis">Holiday</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'company_holiday_overview' %}" class="text-warning-emphasis">Overview</a></li>
+                    <li class="breadcrumb-item" aria-current="page">Edit</li>
                 </ol>
             </nav>
 
 
 
             <div class="row">
-                <div class="col-md-7 offset-md-2">
+                <div class="col-md-7 offset-md-2 p-5" style="background-color: black;border-radius: 10px;">
                     <h1 class="text-center text-white mb-3">Edit Holiday</h1>
+                    <div class="container">
+                        {% for message in messages %}
+                        <h5>
+                            <div class="alert alert-danger mt-5">
+                            {{message}}
+                            </div>
+                        </h5>
+                        {% endfor %}
+                  
+                    </div>
                     <form method="post" action="{% url 'company_holiday_overview_edit_op' holiday.id %}?month={{month}}&year={{year}}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group row mb-4">
@@ -39,7 +57,7 @@
                         </div>
                         <div class="form-group row">
                         <div class="col-sm-9 offset-sm-3">
-                            <button type="submit" class="btn btn-primary">Edit</button>
+                            <button type="submit" class="btn" style="background-color:#db6a00;color:white">Edit</button>
                         </div>
                         </div>
                     </form>

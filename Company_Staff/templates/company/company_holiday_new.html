@@ -5,6 +5,11 @@
     .form-control{
         color: white;
     }
+
+    input {
+        color-scheme: dark;
+    }
+    
 </style>
 
 
@@ -14,14 +19,15 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-                  <li class="breadcrumb-item" aria-current="page">Holiday</li>
+                  <li class="breadcrumb-item"><a href="{% url 'company_holiday' %}" class="text-warning-emphasis">Holiday</a></li>
+                  <li class="breadcrumb-item" aria-current="page">Add</li>
                 </ol>
             </nav>
 
 
 
             <div class="row">
-                <div class="col-md-7 offset-md-2">
+                <div class="col-md-7 offset-md-2 p-5" style="background-color: black;border-radius: 10px;">
                     <h1 class="text-center text-white mb-3">Add Holiday</h1>
                     <div class="container">
                         {% for message in messages %}
@@ -32,7 +38,7 @@
                         </h5>
                         {% endfor %}
                   
-                      </div>
+                    </div>
                     <form method="post" action="{% url 'company_holiday_new_add' %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group row mb-4">
@@ -64,8 +70,8 @@
                         <input type="number" value="{{n}}" name="destination" hidden> 
                         <div class="form-group row">
                         <div class="col-sm-9 offset-sm-3">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <a href="{% url 'company_holiday_new' %}" class="btn btn-danger">Cancel</a>
+                            <button type="submit" class="btn" style="background-color:#db6a00;color:white">Save</button>
+                            <a href="{% url 'company_holiday_new' %}" class="btn" style="background-color: #db6a00;color: white;">Cancel</a>
                         </div>
                         </div>
                     </form>

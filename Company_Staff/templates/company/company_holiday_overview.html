@@ -23,6 +23,13 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- FullCalendar CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.css" rel="stylesheet">
+
+<!-- FullCalendar JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js"></script>
+
 
 
 
@@ -67,6 +74,20 @@
     #searchInput {
         border: 1px solid orange;
     }
+    #searchInput {
+      background-color: white;
+      color: black;
+  }
+
+    /* CSS for removing border-right style on smaller screens */
+    @media (max-width: 576px) {
+        #verticalLine {
+            border-right: none !important; /* Remove the border-right style */
+        }
+    }
+
+
+
 
 
     
@@ -82,13 +103,13 @@
                   <li class="breadcrumb-item" aria-current="page">Overview</li>
                 </ol>
             </nav>
-            <div class="row">
-                <div class="col-sm-4">
+            <div class="row p-3 m-3" style="background-color: black;border-radius: 10px;">
+                <div class="col-sm-4" id="verticalLine" style="border-right: 1px solid white;">
                         <div style="overflow-x:auto;" class="section" id="section1">
                             <h1 class="text-center text-white">All Holidays</h1>
                             <div class="table-responsive">
                                 <div class="mb-3">
-                                    <input type="text" id="searchInput" class="form-control text-white btn-outline-warning" placeholder="Type to search">
+                                    <input type="text" id="searchInput" class="form-control btn-outline-warning" placeholder="Type to search">
                                 </div>
                                 <div class="mb-3 d-flex align-items-center">
                                     <div class="dropdown me-2">
@@ -124,14 +145,16 @@
                             </div>     
                         </div>
                 </div>
+
+
             
-            <div class="col-sm-8">
+                <div class="col-sm-8">
                     <div class="section" id="section2">
                         <div class="row radius-15">
-                            <div id="calendarDiv" class="col"><h3 class="text-center"><a href="" id="calendarLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Calendar</a></h3></div>
+                            <div id="calendarDiv" class="col"><h3 class="text-center"><a href="" id="calendarLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;background-color:#db6a00;">Calendar</a></h3></div>
                             <div id="holidayListDiv" class="col"><h3 class="text-center"><a href="" id="holidayListLink" style="padding: 10px 20%;border-top-right-radius: 15px;border-top-left-radius: 15px;">Overview</a></h3></div>
                         </div>
-                        <div class="card radius-15" style="background-color: rgba(0,0,0,0.1);">
+                        <div class="card radius-15" style="background-color: rgba(0,0,0,0.2);">
                             <div class="ml-auto"><a style="cursor: pointer;" title="Close" href="" ><i class="fa-solid fa-circle-xmark fa-2xl"></i></a></div>
                             <div class="card-body">
                                 
@@ -174,7 +197,7 @@
                                                                 <label for="exampleInputEmail1">Email address</label>
                                                                 <input type="email" class="form-control mb-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email" required>
                                                             </div>
-                                                            <button type="submit" class="btn btn-primary">Share</button>
+                                                            <button type="submit" class="btn" style="background-color:#db6a00;color:white">Share</button>
                                                         </form>
                                                         
                                                     </div>
@@ -203,10 +226,10 @@
                                                     <td style="text-transform: capitalize;">{{ row.1 }}</td>
                                                     <td>{{ row.2 }}</td>
                                                     <td>{{ row.3 }}</td>
-                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}" style="color:red;margin-right: 5px;" ><i class="fa fa-trash"></i></a> 
-                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" style="color:yellow;"><i class="fa fa-edit"></i></a>
-                                                        <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" style="color: blue;"><i class="fa fa-comment"></i></a>
-                                                        <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history"><i class="fa fa-history"></i></a>
+                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}"  class="btn btn-outline-warning text-grey m-1" ><i class="fa fa-trash"></i></a> 
+                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey m-1"><i class="fa fa-edit"></i></a>
+                                                        <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" class="btn btn-outline-warning text-grey m-1"><i class="fa fa-comment"></i></a>
+                                                        <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history" class="btn btn-outline-warning text-grey m-1"><i class="fa fa-history"></i></a>
 
                                                         <!-- Comment modal -->
                                                         <div class="modal fade" id="commentModal{{ row.4 }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -231,7 +254,7 @@
                                                                             {% if c.holiday_details.id == row.4 %}
                                                                             <tr class="border-bottom border-dark">
                                                                                 <td>{{c.comment}}</td>
-                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{month}}&year={{year}}"><i class="fa fa-trash"></i></a></td>
+                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-trash"></i></a></td>
                                                                             </tr>
                                                                             {% endif %}
                                                                             {% endfor %}
@@ -247,8 +270,8 @@
                                                                 
                                                                 </div>
                                                                 <div class="modal-footer">
-                                                                    <button type="submit" class="btn btn-secondary">Save</button>
-                                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                                    <button type="submit" class="btn" style="background-color:#db6a00;color:white">Save</button>
+                                                                    <button type="button" class="btn" style="background-color:#db6a00;color:white" data-dismiss="modal">Close</button>
                                                                 </div>
                                                                 </form>
 
@@ -338,10 +361,15 @@
                 {
                     title: '{{ row.1 }}',
                     start: '{{ row.2|date:"Y-m-d" }}', // Format start date
+                    backgroundColor: '#FFA500', // Set background color dynamically
                 }
                 {% if not forloop.last %},{% endif %} // Add comma except for the last event
                 {% endfor %}
-            ]
+            ],
+            headerToolbar: {
+            center: '', // Remove buttons from the center
+            right: '', // Remove buttons from the right side
+            }
             });
 
              // Specify the year and month you want to open the calendar to
@@ -373,39 +401,39 @@
 
             // Set initial display based on tog value
             var togdValue = document.getElementById('togd-value').getAttribute('data-togd');
-        
-            var tog = togdValue; // Example value, replace with your actual value
-            if (tog == 1) {
-                calendarDiv.style.display = "none";
-                holidayListDiv.style.display = "block";
-                holidayListLink.classList.add("active");
-                holidayListLink.style.backgroundColor = '#213b52';
-            } else {
-                calendarDiv.style.display = "block";
-                holidayListDiv.style.display = "none";
-                calendarLink.classList.add("active");
-                calendarLink.style.backgroundColor = '#213b52';
+            var activeTab = togdValue == 1 ? "holidayList" : "calendar";
+            updateTabView();
+
+            // Function to update tab view
+            function updateTabView() {
+                if (activeTab === "calendar") {
+                    calendarDiv.style.display = "block";
+                    holidayListDiv.style.display = "none";
+                    calendarLink.classList.add("active");
+                    holidayListLink.classList.remove("active");
+                    calendarLink.style.backgroundColor = '#db6a00';
+                    holidayListLink.style.backgroundColor = 'transparent';
+                } else {
+                    calendarDiv.style.display = "none";
+                    holidayListDiv.style.display = "block";
+                    calendarLink.classList.remove("active");
+                    holidayListLink.classList.add("active");
+                    calendarLink.style.backgroundColor = 'transparent';
+                    holidayListLink.style.backgroundColor = '#db6a00';
+                }
             }
 
             // Add click event listeners
             calendarLink.addEventListener("click", function(event) {
                 event.preventDefault();
-                calendarDiv.style.display = "block";
-                holidayListDiv.style.display = "none";
-                calendarLink.classList.add("active");
-                holidayListLink.classList.remove("active");
-                calendarLink.style.backgroundColor = '#213b52';
-                holidayListLink.style.backgroundColor = 'transparent';
+                activeTab = "calendar";
+                updateTabView();
             });
 
             holidayListLink.addEventListener("click", function(event) {
                 event.preventDefault();
-                calendarDiv.style.display = "none";
-                holidayListDiv.style.display = "block";
-                calendarLink.classList.remove("active");
-                holidayListLink.classList.add("active");
-                calendarLink.style.backgroundColor = 'transparent';
-                holidayListLink.style.backgroundColor = '#213b52';
+                activeTab = "holidayList";
+                updateTabView();
             });
         });
 

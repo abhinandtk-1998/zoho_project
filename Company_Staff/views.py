@@ -635,9 +635,13 @@ def company_holiday_new_add(request):
         s_date=request.POST['sdate']
         e_date=request.POST['edate']
 
+        if e_date < s_date:
+            messages.info(request, "End date cannot be earlier than start date")
+            return redirect(reverse('company_holiday_new') + f'?n={dest}')
+
         if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id).exists():
             messages.info(request, 'This holiday already exists')
-            return redirect('company_holiday_new')
+            return redirect(reverse('company_holiday_new') + f'?n={dest}')
 
         holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id)
         holiday_d.save()
@@ -677,6 +681,8 @@ def company_holiday_import_operation(request):
             for index, row in df.iterrows():
                 # Create a new object of YourModel and populate fields
                 if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=company_id).exists():
+                    continue
+                if row['s_date'] > row['e_date']:
                     continue
                 
                 h1 = Holiday(
@@ -873,6 +879,11 @@ def company_holiday_overview_edit_op(request,pk):
         title=request.POST['title']
         s_date=request.POST['sdate']
         e_date=request.POST['edate']
+
+        if s_date > e_date:
+            messages.info(request, "End date cannot be earlier than start date")
+            return redirect(reverse('company_holiday_overview_edit', kwargs={'pk': pk}) + f'?month={month}&year={year}')
+
 
         holiday_d = Holiday.objects.get(id=pk)
         holiday_d.holiday_name = title
