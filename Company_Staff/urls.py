@@ -30,6 +30,7 @@ urlpatterns = [
 
     path('Company/Payroll/Holiday',views.company_holiday,name='company_holiday'),
     path('Company/Payroll/Holiday/New',views.company_holiday_new,name='company_holiday_new'),
+    path('Company/Payroll/Holiday/import_sample_download',views.company_holiday_import_sample_download,name='company_holiday_import_sample_download'),
     path('Company/Payroll/Holiday/Import_operation',views.company_holiday_import_operation,name='company_holiday_import_operation'),
     path('Company/Payroll/Holiday/New_add',views.company_holiday_new_add,name='company_holiday_new_add'),
     path('Company/Payroll/Holiday/Overview',views.company_holiday_overview,name='company_holiday_overview'),

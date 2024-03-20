@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from Company_Staff.models import *
 from django.db import models
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.http import HttpResponseNotFound, JsonResponse
 from django.core.mail import send_mail
 from django.core.mail import EmailMessage
 from xhtml2pdf import pisa
@@ -33,6 +33,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.styles import ParagraphStyle
 from django.urls import reverse
 from reportlab.platypus import Spacer
+from django.http import FileResponse
 # from django.views import View
 # from weasyprint import HTML
 
@@ -664,7 +665,25 @@ def company_holiday_new_add(request):
     
     return redirect('company_holiday_new')
 
+def company_holiday_import_sample_download(request):
+     # Path to the sample Excel file
+    file_path = os.path.join(settings.BASE_DIR, 'static', 'holiday_sample_files', 'sample.xlsx')
+    print(file_path)
+    try:
+        # Open the file
+        with open(file_path, 'rb') as excel_file:
+            # Return the file as response
+            response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="sample.xlsx"'
+            return response
+    except FileNotFoundError:
+        # Handle file not found error
+        return HttpResponse("File not found", status=404)
+    except Exception as e:
+        # Handle other exceptions
+        return HttpResponse("An error occurred", status=500)
 
+    
 def company_holiday_import_operation(request):
     login_id = request.session['login_id']
     login_d = LoginDetails.objects.get(id=login_id)
