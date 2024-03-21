@@ -33,9 +33,11 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.styles import ParagraphStyle
 from django.urls import reverse
 from reportlab.platypus import Spacer
-from django.http import FileResponse
-# from django.views import View
-# from weasyprint import HTML
+from django.core.mail import EmailMultiAlternatives
+from email.mime.base import MIMEBase
+from email import encoders
+from reportlab.pdfgen import canvas
+
 
 # Create your views here.
 
@@ -536,134 +538,298 @@ def company_trial_feedback(request):
     
 def company_holiday(request):
 
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
 
-    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
-    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
-    
+        login_d = LoginDetails.objects.get(id=log_id)
+        if login_d.user_type == 'Company':
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+            dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+            
 
-    month_list = []
-    year_list = []
-    date_list = []
+            month_list = []
+            year_list = []
+            date_list = []
 
-    holiday_list = Holiday.objects.filter(user=login_d, company=company_id)
+            holiday_list = Holiday.objects.filter(company=company_id)
 
-    # making list of all dates which are hoidays
-    for d in holiday_list:
-        current_date = d.start_date
-        while current_date <= d.end_date:
-            if current_date not in date_list:
-                date_list.append(current_date)
-            current_date += timedelta(days=1)
+            # making list of all dates which are hoidays
+            for d in holiday_list:
+                current_date = d.start_date
+                while current_date <= d.end_date:
+                    if current_date not in date_list:
+                        date_list.append(current_date)
+                    current_date += timedelta(days=1)
 
 
 
-    for  d in date_list:
-        if d.strftime("%B") not in month_list:
-            month_list.append(d.strftime("%B"))
+            for  d in date_list:
+                if d.strftime("%B") not in month_list:
+                    month_list.append(d.strftime("%B"))
 
-        if d.year not in year_list:
-            year_list.append(d.year)
+                if d.year not in year_list:
+                    year_list.append(d.year)
 
-    # year_list.sort()
+            # year_list.sort()
 
-    month30 = ["April", "June", "September", "November"]
-    month31 = ["January", "March", "May", "July", "August", "October", "December"]
+            month30 = ["April", "June", "September", "November"]
+            month31 = ["January", "March", "May", "July", "August", "October", "December"]
 
-    holiday_table = {}
-    
-    i = 1
-    for y in year_list:
-        for m in month_list:
-            holiday_c = 0
-            st = 0
-            for h in date_list:
-                if m == h.strftime("%B") and y == h.year:
-                    holiday_c = holiday_c + 1
-                    st = 1
+            holiday_table = {}
+            
+            i = 1
+            for y in year_list:
+                for m in month_list:
+                    holiday_c = 0
+                    st = 0
+                    for h in date_list:
+                        if m == h.strftime("%B") and y == h.year:
+                            holiday_c = holiday_c + 1
+                            st = 1
 
-            if st == 1:
-             
-                if m in month31:
-                    working_days = 31 - holiday_c
-                elif m in month30:
-                    working_days = 30 - holiday_c
-                else:
-                    if calendar.isleap(y):
-                        working_days = 29 - holiday_c
+                    if st == 1:
+                    
+                        if m in month31:
+                            working_days = 31 - holiday_c
+                        elif m in month30:
+                            working_days = 30 - holiday_c
+                        else:
+                            if calendar.isleap(y):
+                                working_days = 29 - holiday_c
 
-                    else:
-                        working_days = 28 - holiday_c
+                            else:
+                                working_days = 28 - holiday_c
 
-                holiday_table[i] = [i, m, y, holiday_c, working_days]
-                i = i + 1
-                st = 0
+                        holiday_table[i] = [i, m, y, holiday_c, working_days]
+                        i = i + 1
+                        st = 0
 
-    context = {
-        'holiday_table':holiday_table,
-        'details': dash_details,
-        'allmodules': allmodules,
-    }
+            dash_status = 0
 
+            context = {
+                'holiday_table':holiday_table,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+
+
+                
+            return render(request,'company/company_holiday.html', context)
         
-    return render(request,'company/company_holiday.html', context)
+        if login_d.user_type == 'Staff':
+            staff_d = StaffDetails.objects.get(login_details=login_d)
+            dash_details = StaffDetails.objects.get(login_details=login_d,company_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details.company,status='New')
+            
+
+            month_list = []
+            year_list = []
+            date_list = []
+
+            holiday_list = Holiday.objects.filter(company=staff_d.company)
+
+            # making list of all dates which are hoidays
+            for d in holiday_list:
+                current_date = d.start_date
+                while current_date <= d.end_date:
+                    if current_date not in date_list:
+                        date_list.append(current_date)
+                    current_date += timedelta(days=1)
+
+
+
+            for  d in date_list:
+                if d.strftime("%B") not in month_list:
+                    month_list.append(d.strftime("%B"))
+
+                if d.year not in year_list:
+                    year_list.append(d.year)
+
+            # year_list.sort()
+
+            month30 = ["April", "June", "September", "November"]
+            month31 = ["January", "March", "May", "July", "August", "October", "December"]
+
+            holiday_table = {}
+            
+            i = 1
+            for y in year_list:
+                for m in month_list:
+                    holiday_c = 0
+                    st = 0
+                    for h in date_list:
+                        if m == h.strftime("%B") and y == h.year:
+                            holiday_c = holiday_c + 1
+                            st = 1
+
+                    if st == 1:
+                    
+                        if m in month31:
+                            working_days = 31 - holiday_c
+                        elif m in month30:
+                            working_days = 30 - holiday_c
+                        else:
+                            if calendar.isleap(y):
+                                working_days = 29 - holiday_c
+
+                            else:
+                                working_days = 28 - holiday_c
+
+                        holiday_table[i] = [i, m, y, holiday_c, working_days]
+                        i = i + 1
+                        st = 0
+            dash_status = 1
+
+            context = {
+                'holiday_table':holiday_table,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+
+                
+            return render(request,'company/company_holiday.html', context)
+        
+
+    
+    else:
+        return redirect('/')
 
 
 def company_holiday_new(request):
-    # value of n deside holiday page or overview page after holiday addition
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
-    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
 
-    n = request.GET.get('n')
-    context = {
-        'n':n,
-        'details': dash_details,
-        'allmodules': allmodules,
-    }
-    return render(request,'company/company_holiday_new.html', context)
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
+    
+        
+        login_d = LoginDetails.objects.get(id=log_id)
+        if login_d.user_type == 'Company':
+            dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+
+            # value of n deside holiday page or overview page after holiday addition
+            n = request.GET.get('n')
+
+            dash_status = 0
+            context = {
+                'n':n,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+            return render(request,'company/company_holiday_new.html', context)
+        
+        if login_d.user_type == 'Staff':
+            dash_details = StaffDetails.objects.get(login_details=login_d,company_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details.company,status='New')
+
+            # value of n deside holiday page or overview page after holiday addition
+            n = request.GET.get('n')
+
+            dash_status = 1
+            context = {
+                'n':n,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+
+            }
+            return render(request,'company/company_holiday_new.html', context)
+    
+    else:
+        return redirect('/')
 
 def company_holiday_new_add(request):
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    if request.method=="POST":
-        dest=request.POST['destination']
-        title=request.POST['title']
-        s_date=request.POST['sdate']
-        e_date=request.POST['edate']
 
-        if e_date < s_date:
-            messages.info(request, "End date cannot be earlier than start date")
-            return redirect(reverse('company_holiday_new') + f'?n={dest}')
-
-        if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id).exists():
-            messages.info(request, 'This holiday already exists')
-            return redirect(reverse('company_holiday_new') + f'?n={dest}')
-
-        holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id)
-        holiday_d.save()
-
-        today_date = date.today()
-        action_h = "Created"
-
-        history = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
-        history.save()
-
-        dest1 = int(dest)
-
-        # to overview page
-        if dest1 == 1:
-            return redirect('company_holiday_overview')
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
         
-        #to holiday page
-        else:
-            return redirect('company_holiday')
+        login_d = LoginDetails.objects.get(id=log_id)
+        if login_d.user_type == 'Company':
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+            if request.method=="POST":
+                dest=request.POST['destination']
+                title=request.POST['title']
+                s_date=request.POST['sdate']
+                e_date=request.POST['edate']
+
+                if e_date < s_date:
+                    messages.info(request, "End date cannot be earlier than start date")
+                    return redirect(reverse('company_holiday_new') + f'?n={dest}')
+
+                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id).exists():
+                    messages.info(request, 'This holiday already exists')
+                    return redirect(reverse('company_holiday_new') + f'?n={dest}')
+
+                holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id)
+                holiday_d.save()
+
+                today_date = date.today()
+                action_h = "Created"
+
+                history = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+                history.save()
+
+                dest1 = int(dest)
+
+                # to overview page
+                if dest1 == 1:
+                    return redirect('company_holiday_overview')
+                
+                #to holiday page
+                else:
+                    return redirect('company_holiday')
+            
+            return redirect('company_holiday_new')
+        
+        
+        
+
+        if login_d.user_type == 'Staff':
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+            if request.method=="POST":
+                dest=request.POST['destination']
+                title=request.POST['title']
+                s_date=request.POST['sdate']
+                e_date=request.POST['edate']
+
+                if e_date < s_date:
+                    messages.info(request, "End date cannot be earlier than start date")
+                    return redirect(reverse('company_holiday_new') + f'?n={dest}')
+
+                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=staff_id.company).exists():
+                    messages.info(request, 'This holiday already exists')
+                    return redirect(reverse('company_holiday_new') + f'?n={dest}')
+
+                holiday_d = Holiday(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=staff_id.company)
+                holiday_d.save()
+
+                today_date = date.today()
+                action_h = "Created"
+
+                history = Holiday_history(company=staff_id.company,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+                history.save()
+
+
+                dest1 = int(dest)
+
+                # to overview page
+                if dest1 == 1:
+                    return redirect('company_holiday_overview')
+                
+                #to holiday page
+                else:
+                    return redirect('company_holiday')
+            
+            return redirect('company_holiday_new')
+        
+        
     
-    return redirect('company_holiday_new')
+    else:
+        return redirect('/')
+
 
 def company_holiday_import_sample_download(request):
      # Path to the sample Excel file
@@ -685,166 +851,340 @@ def company_holiday_import_sample_download(request):
 
     
 def company_holiday_import_operation(request):
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    if request.method == 'POST' and request.FILES['file']:
-        excel_file = request.FILES['file']
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
+        
 
-        # Check if the uploaded file is an Excel file
-        if excel_file.name.endswith('.xls') or excel_file.name.endswith('.xlsx'):
-            # Load Excel file into pandas DataFrame
-            df = pd.read_excel(excel_file)
+        login_d = LoginDetails.objects.get(id=log_id)
+        if login_d.user_type == 'Company':
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+            if request.method == 'POST' and request.FILES['file']:
+                excel_file = request.FILES['file']
 
-            # Iterate through rows and save data to database
-            for index, row in df.iterrows():
-                # Create a new object of YourModel and populate fields
-                if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=company_id).exists():
-                    continue
-                if row['s_date'] > row['e_date']:
-                    continue
-                
-                h1 = Holiday(
-                    holiday_name=row['title'],
-                    start_date=row['s_date'],
-                    end_date=row['e_date'],
-                    user=login_d,
-                    company=company_id,
-                )
-                h1.save()
+                # Check if the uploaded file is an Excel file
+                if excel_file.name.endswith('.xls') or excel_file.name.endswith('.xlsx'):
+                    # Load Excel file into pandas DataFrame
+                    df = pd.read_excel(excel_file)
 
-                today_date = date.today()
-                action_h = "Created"
+                    # Iterate through rows and save data to database
+                    for index, row in df.iterrows():
+                        # Create a new object of YourModel and populate fields
+                        if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=company_id).exists():
+                            continue
+                        if row['s_date'] > row['e_date']:
+                            continue
+                        
+                        h1 = Holiday(
+                            holiday_name=row['title'],
+                            start_date=row['s_date'],
+                            end_date=row['e_date'],
+                            user=login_d,
+                            company=company_id,
+                        )
+                        h1.save()
 
-                history = Holiday_history(company=company_id,user=login_d,holiday=h1,date=today_date,action=action_h)
-                history.save()
+                        today_date = date.today()
+                        action_h = "Created"
 
-            # Redirect to a success page or render a success message
-            return redirect('company_holiday')
+                        history = Holiday_history(company=company_id,user=login_d,holiday=h1,date=today_date,action=action_h)
+                        history.save()
 
-    # Render the upload form
-    return redirect('company_holiday_import')
+                    # Redirect to a success page or render a success message
+                    return redirect('company_holiday')
+
+            # Render the upload form
+            return redirect('company_holiday_import')
+        
+        if login_d.user_type == 'Staff':
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+            if request.method == 'POST' and request.FILES['file']:
+                excel_file = request.FILES['file']
+
+                # Check if the uploaded file is an Excel file
+                if excel_file.name.endswith('.xls') or excel_file.name.endswith('.xlsx'):
+                    # Load Excel file into pandas DataFrame
+                    df = pd.read_excel(excel_file)
+
+                    # Iterate through rows and save data to database
+                    for index, row in df.iterrows():
+                        # Create a new object of YourModel and populate fields
+                        if Holiday.objects.filter(start_date=row['s_date'],end_date=row['e_date'],holiday_name=row['title'],user=login_d,company=staff_id.company).exists():
+                            continue
+                        if row['s_date'] > row['e_date']:
+                            continue
+                        
+                        h1 = Holiday(
+                            holiday_name=row['title'],
+                            start_date=row['s_date'],
+                            end_date=row['e_date'],
+                            user=login_d,
+                            company=company_id,
+                        )
+                        h1.save()
+
+                        today_date = date.today()
+                        action_h = "Created"
+
+                        history = Holiday_history(company=staff_id.company,user=login_d,holiday=h1,date=today_date,action=action_h)
+                        history.save()
+
+                    # Redirect to a success page or render a success message
+                    return redirect('company_holiday')
+
+            # Render the upload form
+            return redirect('company_holiday_import')
+    
+    else:
+        return redirect('/')
 
 def company_holiday_overview(request):
 
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    comment = Comment_holiday.objects.filter(user=login_d, company=company_id)
-    holiday_history = Holiday_history.objects.filter(user=login_d, company=company_id)
-    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
-    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
 
-    mn = request.GET.get('month')
-    yr = request.GET.get('year')
+        login_d = LoginDetails.objects.get(id=log_id)
 
-    #default view of tab view depend on togd, 1-list, else-calendar
-    togd = request.GET.get('togd')
+        if login_d.user_type == 'Company':
 
-    holiday2 = Holiday.objects.filter(user=login_d, company=company_id)
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+            comment = Comment_holiday.objects.filter(company=company_id)
+            holiday_history = Holiday_history.objects.filter(company=company_id)
+            dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details,status='New')
 
-    for h3 in holiday2:
-        mn2 = h3.start_date.strftime("%B")
-        yr2 = h3.start_date.year
-        break
-    
+            mn = request.GET.get('month')
+            yr = request.GET.get('year')
 
-    if mn is None:
-        mn = mn2
-    if yr is None:
-        yr = yr2
+            #default view of tab view depend on togd, 1-list, else-calendar
+            togd = request.GET.get('togd')
+
+            holiday2 = Holiday.objects.filter(company=company_id)
+
+            for h3 in holiday2:
+                mn2 = h3.start_date.strftime("%B")
+                yr2 = h3.start_date.year
+                break
+            
+
+            if mn is None:
+                mn = mn2
+            if yr is None:
+                yr = yr2
+                
+            try:
+                month = datetime.strptime(mn, '%B').month
+            except:
+                month = mn
+
+            year = int(yr)
+
+            events = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, company=company_id) | Q(end_date__month=month, end_date__year=year, company=company_id))
+
+            event_list = {}
+
+            k = 1
+            for e1 in events:
+                current_date = e1.start_date
+                while current_date <= e1.end_date:
+                    event_list[k] = [k, e1.holiday_name, current_date ]
+                    k = k + 1
+                    current_date += timedelta(days=1)
+                
+
+
+            event_table = {}
+            j = 1
+
+            for h in events:
+                event_table[j] = [j, h.holiday_name, h.start_date, h.end_date, h.id]
+                j = j + 1
+
+            month_list = []
+            year_list = []
+            date_list = []
+            holiday_list = Holiday.objects.filter(company=company_id)
+            for d in holiday_list:
+                current_date = d.start_date
+                while current_date <= d.end_date:
+                    if current_date not in date_list:
+                        date_list.append(current_date)
+                    current_date += timedelta(days=1)
+
+
+
+            for  d in date_list:
+                if d.strftime("%B") not in month_list:
+                    month_list.append(d.strftime("%B"))
+
+                if d.year not in year_list:
+                    year_list.append(d.year)
+
+
+            holiday_table = {}
+            
+            i = 1
+            for y in year_list:
+                for m in month_list:
+                    holiday_c = 0
+                    st = 0
+                    for h in date_list:
+                        if m == h.strftime("%B") and y == h.year:
+                            holiday_c = holiday_c + 1
+                            st = 1
+
+                    if st == 1:
+                    
+
+                        holiday_table[i] = [i, m, y, holiday_c]
+                        i = i + 1
+                        st = 0
+
+
+            month_name = datetime.strptime(str(month), '%m').strftime('%B')
+
+            
+            dash_status = 0
+            
+
+            context = {
+                'holiday_table':holiday_table,
+                'events':events,
+                'event_list':event_list,
+                'event_table':event_table,
+                'month_name':month_name,
+                'month':month,
+                'year':year,
+                'comments':comment,
+                'holiday_history':holiday_history,
+                'togd':togd,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+
+            return render(request, 'company/company_holiday_overview.html',context)
         
-    try:
-        month = datetime.strptime(mn, '%B').month
-    except:
-        month = mn
+        if login_d.user_type == 'Staff':
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+            comment = Comment_holiday.objects.filter(company=staff_id.company)
+            holiday_history = Holiday_history.objects.filter(company=staff_id.company)
+            dash_details = StaffDetails.objects.get(login_details=login_d,company_approval=1)
+            allmodules= ZohoModules.objects.get(company=staff_id.company,status='New')
 
-    year = int(yr)
+            mn = request.GET.get('month')
+            yr = request.GET.get('year')
 
-    events = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, user=login_d, company=company_id) | Q(end_date__month=month, end_date__year=year, user=login_d, company=company_id))
+            #default view of tab view depend on togd, 1-list, else-calendar
+            togd = request.GET.get('togd')
 
-    event_list = {}
+            holiday2 = Holiday.objects.filter(company=staff_id.company)
 
-    k = 1
-    for e1 in events:
-        current_date = e1.start_date
-        while current_date <= e1.end_date:
-            event_list[k] = [k, e1.holiday_name, current_date ]
-            k = k + 1
-            current_date += timedelta(days=1)
-        
+            for h3 in holiday2:
+                mn2 = h3.start_date.strftime("%B")
+                yr2 = h3.start_date.year
+                break
+            
 
+            if mn is None:
+                mn = mn2
+            if yr is None:
+                yr = yr2
+                
+            try:
+                month = datetime.strptime(mn, '%B').month
+            except:
+                month = mn
 
-    event_table = {}
-    j = 1
+            year = int(yr)
 
-    for h in events:
-        event_table[j] = [j, h.holiday_name, h.start_date, h.end_date, h.id]
-        j = j + 1
+            events = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, company=staff_id.company) | Q(end_date__month=month, end_date__year=year, company=staff_id.company))
 
-    month_list = []
-    year_list = []
-    date_list = []
-    holiday_list = Holiday.objects.filter(user=login_d, company=company_id)
-    for d in holiday_list:
-        current_date = d.start_date
-        while current_date <= d.end_date:
-            if current_date not in date_list:
-                date_list.append(current_date)
-            current_date += timedelta(days=1)
+            event_list = {}
 
-
-
-    for  d in date_list:
-        if d.strftime("%B") not in month_list:
-            month_list.append(d.strftime("%B"))
-
-        if d.year not in year_list:
-            year_list.append(d.year)
+            k = 1
+            for e1 in events:
+                current_date = e1.start_date
+                while current_date <= e1.end_date:
+                    event_list[k] = [k, e1.holiday_name, current_date ]
+                    k = k + 1
+                    current_date += timedelta(days=1)
+                
 
 
-    holiday_table = {}
+            event_table = {}
+            j = 1
+
+            for h in events:
+                event_table[j] = [j, h.holiday_name, h.start_date, h.end_date, h.id]
+                j = j + 1
+
+            month_list = []
+            year_list = []
+            date_list = []
+            holiday_list = Holiday.objects.filter(company=staff_id.company)
+            for d in holiday_list:
+                current_date = d.start_date
+                while current_date <= d.end_date:
+                    if current_date not in date_list:
+                        date_list.append(current_date)
+                    current_date += timedelta(days=1)
+
+
+
+            for  d in date_list:
+                if d.strftime("%B") not in month_list:
+                    month_list.append(d.strftime("%B"))
+
+                if d.year not in year_list:
+                    year_list.append(d.year)
+
+
+            holiday_table = {}
+            
+            i = 1
+            for y in year_list:
+                for m in month_list:
+                    holiday_c = 0
+                    st = 0
+                    for h in date_list:
+                        if m == h.strftime("%B") and y == h.year:
+                            holiday_c = holiday_c + 1
+                            st = 1
+
+                    if st == 1:
+                    
+
+                        holiday_table[i] = [i, m, y, holiday_c]
+                        i = i + 1
+                        st = 0
+
+
+            month_name = datetime.strptime(str(month), '%m').strftime('%B')
+
+            
+            dash_status = 1
+            
+
+            context = {
+                'holiday_table':holiday_table,
+                'events':events,
+                'event_list':event_list,
+                'event_table':event_table,
+                'month_name':month_name,
+                'month':month,
+                'year':year,
+                'comments':comment,
+                'holiday_history':holiday_history,
+                'togd':togd,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+
+            return render(request, 'company/company_holiday_overview.html',context)
     
-    i = 1
-    for y in year_list:
-        for m in month_list:
-            holiday_c = 0
-            st = 0
-            for h in date_list:
-                if m == h.strftime("%B") and y == h.year:
-                    holiday_c = holiday_c + 1
-                    st = 1
-
-            if st == 1:
-             
-
-                holiday_table[i] = [i, m, y, holiday_c]
-                i = i + 1
-                st = 0
-
-
-    month_name = datetime.strptime(str(month), '%m').strftime('%B')
-
-    
-
-    
-
-    context = {
-        'holiday_table':holiday_table,
-        'events':events,
-        'event_list':event_list,
-        'event_table':event_table,
-        'month_name':month_name,
-        'month':month,
-        'year':year,
-        'comments':comment,
-        'holiday_history':holiday_history,
-        'togd':togd,
-        'details': dash_details,
-        'allmodules': allmodules,
-    }
-
-    return render(request, 'company/company_holiday_overview.html',context)
+    else:
+        return redirect('/')
 
 
 def company_holiday_overview_delete(request,pk):
@@ -865,87 +1205,190 @@ def company_holiday_overview_delete(request,pk):
 
 
 def company_holiday_overview_edit(request,pk):
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
     
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
-    allmodules= ZohoModules.objects.get(company=dash_details,status='New')
+        login_d = LoginDetails.objects.get(id=log_id)
 
-    year = request.GET.get('year')
-    month = request.GET.get('month')
+        if login_d.user_type == 'Company':
+            dash_details = CompanyDetails.objects.get(login_details=login_d,superadmin_approval=1,Distributor_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details,status='New')
 
-    h1 = Holiday.objects.get(id=pk)
-    context = {
-        'id':pk,
-        'holiday':h1,
-        'month':month,
-        'year':year,
-        'details': dash_details,
-        'allmodules': allmodules,
-    }
-    return render(request, 'company/company_holiday_overview_edit.html',context)
+            year = request.GET.get('year')
+            month = request.GET.get('month')
+
+            h1 = Holiday.objects.get(id=pk)
+
+            dash_status = 0
+
+            context = {
+                'id':pk,
+                'holiday':h1,
+                'month':month,
+                'year':year,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+            return render(request, 'company/company_holiday_overview_edit.html',context)
+        
+        if login_d.user_type == 'Staff':
+            dash_details = StaffDetails.objects.get(login_details=login_d,company_approval=1)
+            allmodules= ZohoModules.objects.get(company=dash_details.company,status='New')
+
+            year = request.GET.get('year')
+            month = request.GET.get('month')
+
+            h1 = Holiday.objects.get(id=pk)
+
+            dash_status = 1
+            context = {
+                'id':pk,
+                'holiday':h1,
+                'month':month,
+                'year':year,
+                'details': dash_details,
+                'allmodules': allmodules,
+                'dash_status':dash_status,
+            }
+            return render(request, 'company/company_holiday_overview_edit.html',context)
+    else:
+        return redirect('/')
 
 def company_holiday_overview_edit_op(request,pk):
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
 
-    year = request.GET.get('year')
-    month = request.GET.get('month')
+        login_d = LoginDetails.objects.get(id=log_id)
 
-
-    if request.method=="POST":
-        title=request.POST['title']
-        s_date=request.POST['sdate']
-        e_date=request.POST['edate']
-
-        if s_date > e_date:
-            messages.info(request, "End date cannot be earlier than start date")
-            return redirect(reverse('company_holiday_overview_edit', kwargs={'pk': pk}) + f'?month={month}&year={year}')
-
-
-        holiday_d = Holiday.objects.get(id=pk)
-        holiday_d.holiday_name = title
-        holiday_d.start_date = s_date
-        holiday_d.end_date = e_date
-
-        today_date = date.today()
-        action_h = "Edited"
-
-        history_h = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+        if login_d.user_type == 'Company':
         
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+
+            year = request.GET.get('year')
+            month = request.GET.get('month')
 
 
-        holiday_d.save()
-        history_h.save()
-        togd = 1
+            if request.method=="POST":
+                title=request.POST['title']
+                s_date=request.POST['sdate']
+                e_date=request.POST['edate']
 
-        
-        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+                if s_date > e_date:
+                    messages.info(request, "End date cannot be earlier than start date")
+                    return redirect(reverse('company_holiday_overview_edit', kwargs={'pk': pk}) + f'?month={month}&year={year}')
+
+
+                holiday_d = Holiday.objects.get(id=pk)
+                holiday_d.holiday_name = title
+                holiday_d.start_date = s_date
+                holiday_d.end_date = e_date
+
+                today_date = date.today()
+                action_h = "Edited"
+
+                history_h = Holiday_history(company=company_id,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+                
+
+
+                holiday_d.save()
+                history_h.save()
+                togd = 1
+
+                
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+        if login_d.user_type == 'Staff':
+    
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+
+            year = request.GET.get('year')
+            month = request.GET.get('month')
+
+
+            if request.method=="POST":
+                title=request.POST['title']
+                s_date=request.POST['sdate']
+                e_date=request.POST['edate']
+
+                if s_date > e_date:
+                    messages.info(request, "End date cannot be earlier than start date")
+                    return redirect(reverse('company_holiday_overview_edit', kwargs={'pk': pk}) + f'?month={month}&year={year}')
+
+
+                holiday_d = Holiday.objects.get(id=pk)
+                holiday_d.holiday_name = title
+                holiday_d.start_date = s_date
+                holiday_d.end_date = e_date
+
+                today_date = date.today()
+                action_h = "Edited"
+
+                history_h = Holiday_history(company=staff_id.company,user=login_d,holiday=holiday_d,date=today_date,action=action_h)
+                
+
+
+                holiday_d.save()
+                history_h.save()
+                togd = 1
+
+                
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+        else:
+            return redirect('/')
+
     
     return redirect('company_holiday_overview_edit')
 
 def company_holiday_overview_comment(request,pk):
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
 
-    month = request.GET.get('month')
-    year = request.GET.get('year')
 
-    togd = 1
+        login_d = LoginDetails.objects.get(id=log_id)
 
-    if request.method=='POST':
-        comment=request.POST['comment']
+        if login_d.user_type == 'Company':
+            company_id = CompanyDetails.objects.get(login_details=login_d)
 
-        holiday = Holiday.objects.get(id=pk)
+            month = request.GET.get('month')
+            year = request.GET.get('year')
 
-        c1 = Comment_holiday(holiday_details=holiday, comment=comment, user=login_d, company=company_id)
-        c1.save()
+            togd = 1
 
-        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
-    
-    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            if request.method=='POST':
+                comment=request.POST['comment']
+
+                holiday = Holiday.objects.get(id=pk)
+
+                c1 = Comment_holiday(holiday_details=holiday, comment=comment, user=login_d, company=company_id)
+                c1.save()
+
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+            return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+        
+        if login_d.user_type == 'Staff':
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+
+            month = request.GET.get('month')
+            year = request.GET.get('year')
+
+            togd = 1
+
+            if request.method=='POST':
+                comment=request.POST['comment']
+
+                holiday = Holiday.objects.get(id=pk)
+
+                c1 = Comment_holiday(holiday_details=holiday, comment=comment, user=login_d, company=staff_id.company)
+                c1.save()
+
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+            return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+    else:
+        return redirect('/')
 
 def company_holiday_overview_comment_delete(request,pk):
     month = request.GET.get('month')
@@ -955,108 +1398,294 @@ def company_holiday_overview_comment_delete(request,pk):
     togd = 1
 
     return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
-        
+
+
+
 
 
 
 def company_holiday_overview_email_send(request):
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
 
-    login_id = request.session['login_id']
-    login_d = LoginDetails.objects.get(id=login_id)
-    company_id = CompanyDetails.objects.get(login_details=login_d)
-    month = request.GET.get('mn')
-    year = request.GET.get('yr')
-    month_name = calendar.month_name[int(month)]
+
+        login_d = LoginDetails.objects.get(id=log_id)
+
+        if login_d.user_type == 'Company':
+
+
+            company_id = CompanyDetails.objects.get(login_details=login_d)
+            month = request.GET.get('mn')
+            year = request.GET.get('yr')
+            month_name = calendar.month_name[int(month)]
+            eaddress = request.POST.get('email')  # Get email address from POST request
+
+            if request.method=="POST":
+
+                h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=company_id)
+                holiday_d = {}
+                j = 1
+
+                for h in h1:
+                    holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
+                    j += 1
+
+                # Create a PDF document
+                pdf_buffer = io.BytesIO()
+                doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+
+                # Create a heading
+                heading_text = f"<b>{month_name} {year}</b>"
+                heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
+                heading = Paragraph(heading_text, heading_style)
+
+                # Create a list to hold all the data rows
+                table_data = []
+
+                # Add header row
+                headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
+                table_data.append(headers)
+
+                # Extract keys and values from the dictionary
+                keys = list(holiday_d.keys())
+                values = list(holiday_d.values())
+
+                # Add keys as the first column
+                keys_column = [[str(key)] for key in keys]
+
+                # Combine keys column with values
+                for i in range(len(values)):
+                    row = keys_column[i] + values[i]
+                    table_data.append(row)
+
+                # Create a table from the data
+                table = Table(table_data)
+
+                # Style the table
+                style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
+                ])
+                table.setStyle(style)
+
+                # Add space before the table
+                spacer = Spacer(1, 20)  # Add 20 points of space before the table
+
+                # Build the PDF document
+                elements = [heading, spacer, table]
+                doc.build(elements)
+
+                pdf_buffer.seek(0)
+
+                # Send the email with the PDF attachment
+                subject = "Holiday List"
+                message = "Please find the attached holiday list."
+                recipient = eaddress
+
+                msg = EmailMultiAlternatives(subject, message, settings.EMAIL_HOST_USER, [recipient])
+                msg.attach("holiday_list.pdf", pdf_buffer.read(), 'application/pdf')
+                msg.send()
+
+                togd = 1
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+            if login_d.user_type == 'Staff':
+
+
+                staff_id = StaffDetails.objects.get(login_details=login_d)
+                month = request.GET.get('mn')
+                year = request.GET.get('yr')
+                month_name = calendar.month_name[int(month)]
+                eaddress = request.POST.get('email')  # Get email address from POST request
+
+                if request.method=="POST":
+
+                    h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=staff_id.company)
+                    holiday_d = {}
+                    j = 1
+
+                    for h in h1:
+                        holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
+                        j += 1
+
+                    # Create a PDF document
+                    pdf_buffer = io.BytesIO()
+                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+
+                    # Create a heading
+                    heading_text = f"<b>{month_name} {year}</b>"
+                    heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
+                    heading = Paragraph(heading_text, heading_style)
+
+                    # Create a list to hold all the data rows
+                    table_data = []
+
+                    # Add header row
+                    headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
+                    table_data.append(headers)
+
+                    # Extract keys and values from the dictionary
+                    keys = list(holiday_d.keys())
+                    values = list(holiday_d.values())
+
+                    # Add keys as the first column
+                    keys_column = [[str(key)] for key in keys]
+
+                    # Combine keys column with values
+                    for i in range(len(values)):
+                        row = keys_column[i] + values[i]
+                        table_data.append(row)
+
+                    # Create a table from the data
+                    table = Table(table_data)
+
+                    # Style the table
+                    style = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                        ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
+                    ])
+                    table.setStyle(style)
+
+                    # Add space before the table
+                    spacer = Spacer(1, 20)  # Add 20 points of space before the table
+
+                    # Build the PDF document
+                    elements = [heading, spacer, table]
+                    doc.build(elements)
+
+                    pdf_buffer.seek(0)
+
+                    # Send the email with the PDF attachment
+                    subject = "Holiday List"
+                    message = "Please find the attached holiday list."
+                    recipient = eaddress
+
+                    msg = EmailMultiAlternatives(subject, message, settings.EMAIL_HOST_USER, [recipient])
+                    msg.attach("holiday_list.pdf", pdf_buffer.read(), 'application/pdf')
+                    msg.send()
+
+                    togd = 1
+                    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+            
+
+        else:
+            return redirect('/')
+            
+
+
+
+# def company_holiday_overview_email_send(request):
+
+#     login_id = request.session['login_id']
+#     login_d = LoginDetails.objects.get(id=login_id)
+#     company_id = CompanyDetails.objects.get(login_details=login_d)
+#     month = request.GET.get('mn')
+#     year = request.GET.get('yr')
+#     month_name = calendar.month_name[int(month)]
     
-    if request.method=="POST":
-        eaddress=request.POST['email']
-        h1 = Holiday.objects.filter(start_date__month=month,start_date__year=year,user=login_d,company=company_id)
-        holiday_d = {}
-        j = 1
+#     if request.method=="POST":
+#         eaddress=request.POST['email']
+#         h1 = Holiday.objects.filter(start_date__month=month,start_date__year=year,user=login_d,company=company_id)
+#         holiday_d = {}
+#         j = 1
 
-        for h in h1:
-            holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
-            j = j + 1
+#         for h in h1:
+#             holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
+#             j = j + 1
 
-         # Create a PDF document
-        pdf_file_name = "holiday_table.pdf"
-        doc = SimpleDocTemplate(pdf_file_name, pagesize=letter)
+#          # Create a PDF document
+#         pdf_file_name = "holiday_table.pdf"
+#         doc = SimpleDocTemplate(pdf_file_name, pagesize=letter)
 
-         # Create a heading
-        heading_text = f"<b> {month_name} {year}</b>"
-        heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
-        heading = Paragraph(heading_text, heading_style)
+#          # Create a heading
+#         heading_text = f"<b> {month_name} {year}</b>"
+#         heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
+#         heading = Paragraph(heading_text, heading_style)
 
-        # Create a list to hold all the data rows
-        table_data = []
+#         # Create a list to hold all the data rows
+#         table_data = []
 
-        # Add header row
-        headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
-        table_data.append(headers)
+#         # Add header row
+#         headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
+#         table_data.append(headers)
 
-        # Extract keys and values from the dictionary
-        keys = list(holiday_d.keys())
-        values = list(holiday_d.values())
+#         # Extract keys and values from the dictionary
+#         keys = list(holiday_d.keys())
+#         values = list(holiday_d.values())
 
 
-        # Add keys as the first column
-        keys_column = [[str(key)] for key in keys]
+#         # Add keys as the first column
+#         keys_column = [[str(key)] for key in keys]
 
-        # Combine keys column with values
-        for i in range(len(values)):
-            row = keys_column[i] + values[i]
-            table_data.append(row)
+#         # Combine keys column with values
+#         for i in range(len(values)):
+#             row = keys_column[i] + values[i]
+#             table_data.append(row)
 
     
 
-        # Create a table from the data
-        table = Table(table_data)
+#         # Create a table from the data
+#         table = Table(table_data)
 
-        # Style the table
-        style = TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
-        ])
+#         # Style the table
+#         style = TableStyle([
+#             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+#             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+#             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+#             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+#             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+#             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+#             ('GRID', (0, 0), (-1, -1), 1, colors.black),
+#             ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
+#         ])
 
-        table.setStyle(style)
+#         table.setStyle(style)
 
-        # Add space before the table
-        spacer = Spacer(1, 20)  # Add 20 points of space before the table
+#         # Add space before the table
+#         spacer = Spacer(1, 20)  # Add 20 points of space before the table
 
-        # Build the PDF document
-        elements = [heading, spacer, table]
-        doc.build(elements)
+#         # Build the PDF document
+#         elements = [heading, spacer, table]
+#         doc.build(elements)
 
 
-        subject = "Holiday List"
-        message = "Please find the attached holiday list."
-        recipient = eaddress
+#         subject = "Holiday List"
+#         message = "Please find the attached holiday list."
+#         recipient = eaddress
 
-        email = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[recipient]
-        )
+#         email = EmailMessage(
+#             subject=subject,
+#             body=message,
+#             from_email=settings.EMAIL_HOST_USER,
+#             to=[recipient]
+#         )
         
-        # Attach the PDF file to the email
-        with open(pdf_file_name, 'rb') as pdf_file:
-            pdf_content = pdf_file.read()
+#         # Attach the PDF file to the email
+#         with open(pdf_file_name, 'rb') as pdf_file:
+#             pdf_content = pdf_file.read()
 
-        # Attach the PDF file to the email
-        email.attach(pdf_file_name, pdf_content, 'application/pdf')
+#         # Attach the PDF file to the email
+#         email.attach(pdf_file_name, pdf_content, 'application/pdf')
 
-        email.send()
+#         email.send()
 
-        togd = 1
 
-        return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+#         togd = 1
+
+#         return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+    
 
 
 

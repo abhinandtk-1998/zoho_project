@@ -13,7 +13,7 @@
         <div class="container-fluid">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a {% if dash_status == 0 %} href="{% url 'company_dashboard' %}" {% else %} href="{% url 'staff_dashboard' %}" {% endif %} class="text-warning-emphasis">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'company_holiday' %}" class="text-warning-emphasis">Holiday</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'company_holiday_overview' %}" class="text-warning-emphasis">Overview</a></li>
                     <li class="breadcrumb-item" aria-current="page">Edit</li>
@@ -24,7 +24,7 @@
 
             <div class="row">
                 <div class="col-md-7 offset-md-2 p-5" style="background-color: black;border-radius: 10px;">
-                    <h1 class="text-center text-white mb-3">Edit Holiday</h1>
+                    <h1 class="text-white mb-5">Edit Holiday</h1>
                     <div class="container">
                         {% for message in messages %}
                         <h5>
@@ -56,7 +56,7 @@
                         </div>
                         </div>
                         <div class="form-group row">
-                        <div class="col-sm-9 offset-sm-3">
+                        <div class="col-sm-9">
                             <button type="submit" class="btn" style="background-color:#db6a00;color:white">Edit</button>
                         </div>
                         </div>

@@ -91,14 +91,7 @@
         height: 500px;
     }
 
-
-
-
-
-
-
-
-    
+ 
 </style>
 
 <body>
@@ -106,7 +99,7 @@
         <div class="container-fluid container-flex">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a {% if dash_status == 0 %} href="{% url 'company_dashboard' %}" {% else %} href="{% url 'staff_dashboard' %}" {% endif %} class="text-warning-emphasis">Dashboard</a></li>
                   <li class="breadcrumb-item"><a href="{% url 'company_holiday' %}" class="text-warning-emphasis">Holiday</a></li>
                   <li class="breadcrumb-item" aria-current="page">Overview</li>
                 </ol>
@@ -244,7 +237,7 @@
                                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                <h5 class="modal-title text-white" id="exampleModalLabel">Leave a Comment</h5>
+                                                                <h3 class="modal-title text-white" id="exampleModalLabel">Comments</h3>
                                                                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
@@ -303,6 +296,7 @@
                                                                 </button>
                                                                 </div>
                                                                 <div class="table-responsive">
+                                                                    <h2 class="text-center text-white">Holidyay History</h2>
                                                                     <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
                                                                         <thead>
                                                                             <tr class="border-bottom border-dark">

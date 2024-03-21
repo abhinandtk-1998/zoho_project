@@ -51,7 +51,7 @@
       <div class="container-fluid">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+            <li class="breadcrumb-item"><a {% if dash_status == 0 %} href="{% url 'company_dashboard' %}" {% else %} href="{% url 'staff_dashboard' %}" {% endif %} class="text-warning-emphasis">Dashboard</a></li>
             <li class="breadcrumb-item" aria-current="page">Holiday</li>
           </ol>
         </nav>
