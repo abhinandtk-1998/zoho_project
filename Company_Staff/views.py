@@ -759,7 +759,7 @@ def company_holiday_new_add(request):
                     messages.info(request, "End date cannot be earlier than start date")
                     return redirect(reverse('company_holiday_new') + f'?n={dest}')
 
-                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=company_id).exists():
+                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,company=company_id).exists():
                     messages.info(request, 'This holiday already exists')
                     return redirect(reverse('company_holiday_new') + f'?n={dest}')
 
@@ -799,7 +799,7 @@ def company_holiday_new_add(request):
                     messages.info(request, "End date cannot be earlier than start date")
                     return redirect(reverse('company_holiday_new') + f'?n={dest}')
 
-                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,user=login_d,company=staff_id.company).exists():
+                if Holiday.objects.filter(start_date=s_date,end_date=e_date,holiday_name=title,company=staff_id.company).exists():
                     messages.info(request, 'This holiday already exists')
                     return redirect(reverse('company_holiday_new') + f'?n={dest}')
 
@@ -918,7 +918,7 @@ def company_holiday_import_operation(request):
                             start_date=row['s_date'],
                             end_date=row['e_date'],
                             user=login_d,
-                            company=company_id,
+                            company=staff_id.company,
                         )
                         h1.save()
 
@@ -1280,6 +1280,15 @@ def company_holiday_overview_edit_op(request,pk):
 
 
                 holiday_d = Holiday.objects.get(id=pk)
+
+                togd = 1
+
+                st_date = datetime.strptime(s_date, '%Y-%m-%d').date()
+                et_date = datetime.strptime(e_date, '%Y-%m-%d').date()
+
+                if holiday_d.holiday_name == title and holiday_d.start_date == st_date and holiday_d.end_date == et_date:
+                    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+
                 holiday_d.holiday_name = title
                 holiday_d.start_date = s_date
                 holiday_d.end_date = e_date
@@ -1293,6 +1302,7 @@ def company_holiday_overview_edit_op(request,pk):
 
                 holiday_d.save()
                 history_h.save()
+                
                 togd = 1
 
                 
@@ -1317,6 +1327,17 @@ def company_holiday_overview_edit_op(request,pk):
 
 
                 holiday_d = Holiday.objects.get(id=pk)
+
+                togd = 1
+
+
+                st_date = datetime.strptime(s_date, '%Y-%m-%d').date()
+                et_date = datetime.strptime(e_date, '%Y-%m-%d').date()
+
+                if holiday_d.holiday_name == title and holiday_d.start_date == st_date and holiday_d.end_date == et_date:
+                    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+
+
                 holiday_d.holiday_name = title
                 holiday_d.start_date = s_date
                 holiday_d.end_date = e_date
@@ -1495,89 +1516,89 @@ def company_holiday_overview_email_send(request):
                 togd = 1
                 return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
             
-            if login_d.user_type == 'Staff':
+        if login_d.user_type == 'Staff':
 
 
-                staff_id = StaffDetails.objects.get(login_details=login_d)
-                month = request.GET.get('mn')
-                year = request.GET.get('yr')
-                month_name = calendar.month_name[int(month)]
-                eaddress = request.POST.get('email')  # Get email address from POST request
+            staff_id = StaffDetails.objects.get(login_details=login_d)
+            month = request.GET.get('mn')
+            year = request.GET.get('yr')
+            month_name = calendar.month_name[int(month)]
+            eaddress = request.POST.get('email')  # Get email address from POST request
 
-                if request.method=="POST":
+            if request.method=="POST":
 
-                    h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=staff_id.company)
-                    holiday_d = {}
-                    j = 1
+                h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=staff_id.company)
+                holiday_d = {}
+                j = 1
 
-                    for h in h1:
-                        holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
-                        j += 1
+                for h in h1:
+                    holiday_d[j] = [h.holiday_name, h.start_date, h.end_date]
+                    j += 1
 
-                    # Create a PDF document
-                    pdf_buffer = io.BytesIO()
-                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                # Create a PDF document
+                pdf_buffer = io.BytesIO()
+                doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
 
-                    # Create a heading
-                    heading_text = f"<b>{month_name} {year}</b>"
-                    heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
-                    heading = Paragraph(heading_text, heading_style)
+                # Create a heading
+                heading_text = f"<b>{month_name} {year}</b>"
+                heading_style = ParagraphStyle(name='Heading1', alignment=1, fontSize=20)
+                heading = Paragraph(heading_text, heading_style)
 
-                    # Create a list to hold all the data rows
-                    table_data = []
+                # Create a list to hold all the data rows
+                table_data = []
 
-                    # Add header row
-                    headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
-                    table_data.append(headers)
+                # Add header row
+                headers = ['Sl No', 'Holiday Name', 'Start Date', 'End Date']
+                table_data.append(headers)
 
-                    # Extract keys and values from the dictionary
-                    keys = list(holiday_d.keys())
-                    values = list(holiday_d.values())
+                # Extract keys and values from the dictionary
+                keys = list(holiday_d.keys())
+                values = list(holiday_d.values())
 
-                    # Add keys as the first column
-                    keys_column = [[str(key)] for key in keys]
+                # Add keys as the first column
+                keys_column = [[str(key)] for key in keys]
 
-                    # Combine keys column with values
-                    for i in range(len(values)):
-                        row = keys_column[i] + values[i]
-                        table_data.append(row)
+                # Combine keys column with values
+                for i in range(len(values)):
+                    row = keys_column[i] + values[i]
+                    table_data.append(row)
 
-                    # Create a table from the data
-                    table = Table(table_data)
+                # Create a table from the data
+                table = Table(table_data)
 
-                    # Style the table
-                    style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
-                    ])
-                    table.setStyle(style)
+                # Style the table
+                style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('FONTSIZE', (0, 0), (-1, -1), 12)  # Increase font size for table data
+                ])
+                table.setStyle(style)
 
-                    # Add space before the table
-                    spacer = Spacer(1, 20)  # Add 20 points of space before the table
+                # Add space before the table
+                spacer = Spacer(1, 20)  # Add 20 points of space before the table
 
-                    # Build the PDF document
-                    elements = [heading, spacer, table]
-                    doc.build(elements)
+                # Build the PDF document
+                elements = [heading, spacer, table]
+                doc.build(elements)
 
-                    pdf_buffer.seek(0)
+                pdf_buffer.seek(0)
 
-                    # Send the email with the PDF attachment
-                    subject = "Holiday List"
-                    message = "Please find the attached holiday list."
-                    recipient = eaddress
+                # Send the email with the PDF attachment
+                subject = "Holiday List"
+                message = "Please find the attached holiday list."
+                recipient = eaddress
 
-                    msg = EmailMultiAlternatives(subject, message, settings.EMAIL_HOST_USER, [recipient])
-                    msg.attach("holiday_list.pdf", pdf_buffer.read(), 'application/pdf')
-                    msg.send()
+                msg = EmailMultiAlternatives(subject, message, settings.EMAIL_HOST_USER, [recipient])
+                msg.attach("holiday_list.pdf", pdf_buffer.read(), 'application/pdf')
+                msg.send()
 
-                    togd = 1
-                    return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
+                togd = 1
+                return redirect(reverse('company_holiday_overview') + f'?month={month}&year={year}&togd={togd}')
             
 
         else:

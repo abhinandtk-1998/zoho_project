@@ -29,12 +29,16 @@
   }
 
   .modal-content {
-        background-color: rgb(41, 37, 37);/* Modal content background color */
+        background-color:rgb(45, 44, 44);
         width: 80%; /* Adjust width as needed */
         max-width: 1000px; /* Maximum width */
         margin: 20px auto; /* Center modal horizontally */
         padding: 20px;
         color: white;
+    }
+
+    .custom-modal-dialog{
+      max-width: 650px;
     }
 
   #searchInput {
@@ -75,11 +79,11 @@
                   <button data-toggle="modal" data-target="#importModal" class="btn btn-outline-warning mr-2 text-yellow m-2 "><i class="fa fa-file-import"></i> Import </button>
                   <!-- import Modal -->
                   <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-                      <div class="modal-dialog">
+                      <div class="modal-dialog custom-modal-dialog">
                           <div class="modal-content">
                               <div class="modal-header">
                                   <h5 class="modal-title" id="emailModalLabel" style="color: white;">Import Holidays</h5>
-                                  <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
+                                  <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
                                       <span aria-hidden="true">&times;</span>
                                   </button>
                               </div>
@@ -87,15 +91,16 @@
                                   <form method="post" action="{% url 'company_holiday_import_operation' %}" enctype="multipart/form-data">
                                       {% csrf_token %}
                                       <div class="form-group row mb-4">
-                                          <label for="name" class="col-sm-3 col-form-label text-white">Select File</label>
+                                          <label for="name" class="col-form-label text-white">Select File</label>
                                           <div class="col-sm-9">
                                               <input type="file" class="form-control text-white" id="title" name="file" required>
                                           </div>
                                       </div>
                                       <div class="form-group row">
-                                          <div class="col-sm-9 offset-sm-3">
-                                              <button type="submit" class="btn mb-3" style="background-color:#db6a00;color:white">Import</button>
-                                              <a href="{% url 'company_holiday_import_sample_download' %}" class="btn" style="background-color:#db6a00;color:white">Download Sample File</a>
+                                          <div class="col-sm-9">
+                                              <button type="submit" class="btn btn-outline-warning text-grey" >Import</button>
+                                              <a href="{% url 'company_holiday_import_sample_download' %}" class="btn btn-outline-warning text-grey ml-2">Download Sample File</a>
+                                              <button type="button" class="btn btn-outline-warning text-grey ml-2" data-dismiss="modal">Close</button>
                                           </div>
                                       </div>
                                   </form>

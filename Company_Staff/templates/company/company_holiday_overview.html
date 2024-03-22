@@ -88,8 +88,23 @@
 
 
     #calendar{
-        height: 500px;
+        height: 650px;
     }
+
+    .modal-content{
+        color-scheme: black;
+        background-color:#1f1f1ffd;
+    }
+
+
+    .custom-modal-dialog {
+    max-width: 600px;
+    }
+
+    .modal-dialog-centered{
+        max-width: 800px;
+    }
+
 
  
 </style>
@@ -166,29 +181,38 @@
                                 <div class="row" id="cal_list">
                                     
                                     <div class="table-responsive">
-                                        <div class="mb-3 d-flex align-items-center">
-                                            <div class="dropdown me-3">
-                                                <button class="btn btn-outline-warning dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-share"></i>Share
-                                                </button>
-                                                <ul class="dropdown-menu" id="dropdown-menu3" aria-labelledby="shareButton">
-                                                    <li><a class="dropdown-item1" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
-                                                    <li><a class="dropdown-item1" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
-                                                </ul>
+                                        <div class="row">
+                                            <div class="col text-start"> <!-- Left align -->
+                                                <div class="dropdown me-3">
+                                                    <button class="btn btn-outline-warning dropdown-toggle text-grey" id="shareButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fa fa-share"></i> Share
+                                                    </button>
+                                                    <ul class="dropdown-menu" id="dropdown-menu3" aria-labelledby="shareButton">
+                                                        <li><a class="dropdown-item1" href="#">{% post_to_whatsapp object_or_url "WhatsApp" %}</a></li>
+                                                        <li><a class="dropdown-item1" href="#" data-toggle="modal" data-target="#emailModal">Email</a></li>
+                                                    </ul>
+                                                </div>
                                             </div>
-                                            <button class="btn btn-outline-warning text-grey m-2" onclick="PrintTable()"><i class="fa fa-print"></i>Print</button>
-                                            <button class="btn btn-outline-warning text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i>Pdf</button>
+                                        
+                                            <div class="col text-center"> <!-- Center align -->
+                                                <button class="btn btn-outline-warning text-grey m-2" onclick="PrintTable()"><i class="fa fa-print"></i> Print</button>
+                                            </div>
+                                        
+                                            <div class="col text-end"> <!-- Right align -->
+                                                <button class="btn btn-outline-warning text-grey m-2" onclick="ExportAsPDF()"><i class="fa fa-file-pdf"></i> Pdf</button>
+                                            </div>
                                         </div>
+                                        
 
                                         
 
                                         <!-- Email Modal -->
                                         <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
+                                            <div class="modal-dialog custom-modal-dialog">
+                                                <div class="modal-content custom-modal-background" >
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="emailModalLabel" style="color: white;">Share via Email</h5>
-                                                        <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
+                                                        <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                     </div>
                                                     <div class="modal-body">
@@ -196,9 +220,10 @@
                                                             {% csrf_token %}
                                                             <div class="form-group">
                                                                 <label for="exampleInputEmail1">Email address</label>
-                                                                <input type="email" class="form-control mb-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email" required>
+                                                                <input type="email" class="form-control mb-3 mt-3 text-white" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email" required>
                                                             </div>
-                                                            <button type="submit" class="btn" style="background-color:#db6a00;color:white">Share</button>
+                                                            <button type="submit" class="btn btn-outline-warning text-grey">Share</button>
+                                                            <button type="button" class="btn btn-outline-warning text-grey ml-3" data-dismiss="modal">Close</button>
                                                         </form>
                                                         
                                                     </div>
@@ -209,7 +234,7 @@
 
                                         
                 
-                                        <table class="table ml-3" id="holidayList" style="background-color: rgb(0, 0, 0);color: white;">
+                                        <table class="table ml-3" id="holidayList" style="color: white;">
                                             <h3 id="headDing" class="text-center text-white"><span id="monthName">{{ month_name }}</span>, {{ year }}</h3><br>
                                             <thead class="thead"  >
                                                 <tr style="font-size: large; " >
@@ -227,54 +252,73 @@
                                                     <td style="text-transform: capitalize;">{{ row.1 }}</td>
                                                     <td>{{ row.2 }}</td>
                                                     <td>{{ row.3 }}</td>
-                                                    <td><a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}"  class="btn btn-outline-warning text-grey btn-sm m-1" ><i class="fa fa-trash"></i></a> 
+                                                    <td style="width: 250px;">
+                                                        <a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}"  class="btn btn-outline-warning text-grey btn-sm m-1" ><i class="fa fa-trash"></i></a> 
                                                         <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-edit"></i></a>
                                                         <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-comment"></i></a>
                                                         <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-history"></i></a>
 
                                                         <!-- Comment modal -->
                                                         <div class="modal fade" id="commentModal{{ row.4 }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-dialog modal-dialog-centered" role="document" >
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                <h3 class="modal-title text-white" id="exampleModalLabel">Comments</h3>
+                                                                <h3 class="modal-title text-white" id="exampleModalLabel">Add Comments</h3>
                                                                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
                                                                 </div>
+
+                                                                
                                                                 <div class="table-responsive">
-                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
+                                                                    <table  class="table mt-lg-5 rounded" style="color: white;" id="CommentTable">
                                                                         <thead>
                                                                             <tr class="border-bottom border-dark">
-                                                                                <th scope="col"><b>Comment</b></th>
-                                                                                <th scope="col"><b>Action</b></th>
+                                                                                <th scope="col"><b>Sl No</b></th>
+                                                                                <th scope="col"><b>Comments</b></th>
+                                                                                <th scope="col"><b>Delete</b></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {% for c in comments %}
-                                                                            {% if c.holiday_details.id == row.4 %}
-                                                                            <tr class="border-bottom border-dark">
-                                                                                <td>{{c.comment}}</td>
-                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-trash"></i></a></td>
-                                                                            </tr>
-                                                                            {% endif %}
-                                                                            {% endfor %}
+                                                                            {% with my_counter=0 %}
+                                                                                {% for c in comments %}
+                                                                                    {% if c.holiday_details.id == row.4 %}
+                                                                                        {% with my_counter=my_counter|add:1 %}
+                                                                                            <tr class="border-bottom border-dark">
+                                                                                                <td>{{ my_counter }}</td>
+                                                                                                <td>{{ c.comment }}</td>
+                                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{ month }}&year={{ year }}" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-trash"></i></a></td>
+                                                                                            </tr>
+                                                                                        {% endwith %}
+                                                                                    {% endif %}
+                                                                                {% endfor %}
+                                                                            {% endwith %}
+
+
+                                                                        
+                                                                    
+
+
+                                                                            
                                                                         </tbody>
                                                                     </table>
                                                                 </div> 
-                                                                
-
                                                                 <form action="{% url 'company_holiday_overview_comment' row.4 %}?month={{month}}&year={{year}}" method="post">
                                                                     {% csrf_token %}
                                                                 <div class="modal-body">
-                                                                    <div><label for="">Leave A Comment : </label> <textarea name="comment" cols="5" rows="3" class="form-control text-white" required></textarea></div><br>
+                                                                    <div><textarea name="comment" cols="5" rows="3" class="form-control text-white" required></textarea></div><br>
                                                                 
                                                                 </div>
                                                                 <div class="modal-footer">
-                                                                    <button type="submit" class="btn" style="background-color:#db6a00;color:white">Save</button>
-                                                                    <button type="button" class="btn" style="background-color:#db6a00;color:white" data-dismiss="modal">Close</button>
+                                                                    <button type="submit" class="btn btn-outline-warning text-grey" >Save</button>
+                                                                    <button type="button" class="btn btn-outline-warning text-grey"  data-dismiss="modal">Close</button>
                                                                 </div>
+                                                                
                                                                 </form>
+                                                                
+                                                                
+
+                                                                
 
                                                             </div>
                                                             </div>
@@ -291,13 +335,14 @@
                                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
+                                                                <h2 class="modal-title text-white">Holiday History</h2>
+                                                                <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
                                                                 </div>
                                                                 <div class="table-responsive">
-                                                                    <h2 class="text-center text-white">Holidyay History</h2>
-                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white;" id="CommentTable">
+                                                                    
+                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white; background-color: black;" id="CommentTable">
                                                                         <thead>
                                                                             <tr class="border-bottom border-dark">
                                                                                 <th scope="col"><b>Date </b></th>
@@ -318,6 +363,9 @@
                                                                         </tbody>
                                                                     </table>
                                                                 </div> 
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-outline-warning text-grey"  data-dismiss="modal">Close</button>
+                                                                </div>
 
                                                             </div>
                                                             </div>
