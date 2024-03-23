@@ -29,7 +29,7 @@
   }
 
   .modal-content {
-        background-color:rgb(45, 44, 44);
+        background-color:#464545fd;
         width: 80%; /* Adjust width as needed */
         max-width: 1000px; /* Maximum width */
         margin: 20px auto; /* Center modal horizontally */
@@ -38,7 +38,7 @@
     }
 
     .custom-modal-dialog{
-      max-width: 650px;
+      max-width: 700px;
     }
 
   #searchInput {
@@ -83,9 +83,7 @@
                           <div class="modal-content">
                               <div class="modal-header">
                                   <h5 class="modal-title" id="emailModalLabel" style="color: white;">Import Holidays</h5>
-                                  <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
-                                      <span aria-hidden="true">&times;</span>
-                                  </button>
+                                  <button type="button" class="btn" data-dismiss="modal" aria-label="Close">X</button>
                               </div>
                               <div class="modal-body">
                                   <form method="post" action="{% url 'company_holiday_import_operation' %}" enctype="multipart/form-data">
@@ -93,14 +91,14 @@
                                       <div class="form-group row mb-4">
                                           <label for="name" class="col-form-label text-white">Select File</label>
                                           <div class="col-sm-9">
-                                              <input type="file" class="form-control text-white" id="title" name="file" required>
+                                              <input type="file" class="form-control text-white" id="title" name="file" style="width: 340px;" required>
                                           </div>
                                       </div>
                                       <div class="form-group row">
                                           <div class="col-sm-9">
-                                              <button type="submit" class="btn btn-outline-warning text-grey" >Import</button>
-                                              <a href="{% url 'company_holiday_import_sample_download' %}" class="btn btn-outline-warning text-grey ml-2">Download Sample File</a>
-                                              <button type="button" class="btn btn-outline-warning text-grey ml-2" data-dismiss="modal">Close</button>
+                                              <button type="submit" class="btn btn-outline-warning text-grey m-1" >Import</button>
+                                              <a href="{% url 'company_holiday_import_sample_download' %}" class="btn btn-outline-warning text-grey m-1">Download Sample File</a>
+                                              <button type="button" class="btn btn-outline-warning text-grey m-1 " data-dismiss="modal">Close</button>
                                           </div>
                                       </div>
                                   </form>

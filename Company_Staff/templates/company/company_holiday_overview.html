@@ -52,7 +52,7 @@
     }
 
     .modal-content {
-        background-color: rgb(41, 37, 37);/* Modal content background color */
+        /* Modal content background color */
         width: 80%; /* Adjust width as needed */
         max-width: 1000px; /* Maximum width */
         margin: 20px auto; /* Center modal horizontally */
@@ -93,16 +93,17 @@
 
     .modal-content{
         color-scheme: black;
-        background-color:#1f1f1ffd;
+        background-color:#464545fd;
     }
 
 
     .custom-modal-dialog {
-    max-width: 600px;
+    max-width: 650px;
+    color-scheme: black;
     }
 
     .modal-dialog-centered{
-        max-width: 800px;
+        max-width: 1000px;
     }
 
 
@@ -212,8 +213,7 @@
                                                 <div class="modal-content custom-modal-background" >
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="emailModalLabel" style="color: white;">Share via Email</h5>
-                                                        <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
+                                                        <button type="button" class="btn" data-dismiss="modal" aria-label="Close">X</button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <form action="{% url 'company_holiday_overview_email_send' %}?mn={{month}}&yr={{year}}" method="post">
@@ -246,6 +246,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                        
                                                 {% for key, row in event_table.items %}
                                                 <tr style="font-size: large;">
                                                     <td>{{ row.0 }}</td>
@@ -253,59 +254,51 @@
                                                     <td>{{ row.2 }}</td>
                                                     <td>{{ row.3 }}</td>
                                                     <td style="width: 250px;">
-                                                        <a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}"  class="btn btn-outline-warning text-grey btn-sm m-1" ><i class="fa fa-trash"></i></a> 
-                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-edit"></i></a>
-                                                        <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-comment"></i></a>
-                                                        <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history" class="btn btn-outline-warning text-grey btn-sm m-1"><i class="fa fa-history"></i></a>
+                                                        <a href="{% url 'company_holiday_overview_delete' row.4 %}?month={{month_name}}&year={{year}}"  class="btn btn-outline-warning text-grey btn-sm m-1" title="Delete" ><i class="fa fa-trash"></i></a> 
+                                                        <a href="{% url 'company_holiday_overview_edit' row.4 %}?month={{month}}&year={{year}}" class="btn btn-outline-warning text-grey btn-sm m-1" title="Edit"><i class="fa fa-edit"></i></a>
+                                                        <a href="#commentModal{{ row.4 }}" data-toggle="modal" title="Comment" class="btn btn-outline-warning text-grey btn-sm m-1" title="Comments"><i class="fa fa-comment"></i></a>
+                                                        <a href="#historyModal{{ row.4 }}" data-toggle="modal" title="history" class="btn btn-outline-warning text-grey btn-sm m-1" title="History"><i class="fa fa-history"></i></a>
 
                                                         <!-- Comment modal -->
                                                         <div class="modal fade" id="commentModal{{ row.4 }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                             <div class="modal-dialog modal-dialog-centered" role="document" >
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                <h3 class="modal-title text-white" id="exampleModalLabel">Add Comments</h3>
-                                                                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
+                                                                <h3 class="modal-title text-white" id="exampleModalLabel">Comments</h3>
+                                                                <button type="button" class="btn" data-dismiss="modal" aria-label="Close">X</button>
                                                                 </div>
 
                                                                 
                                                                 <div class="table-responsive">
-                                                                    <table  class="table mt-lg-5 rounded" style="color: white;" id="CommentTable">
+                                                                    <!-- Comment table -->
+                                                                    <table class="table mt-lg-5 mt-2 rounded text-white commentTable">
                                                                         <thead>
-                                                                            <tr class="border-bottom border-dark">
-                                                                                <th scope="col"><b>Sl No</b></th>
+                                                                            <tr class="border-bottom border-white">
+                                                                                <th scope="col"><b>Sl no</b></th>
                                                                                 <th scope="col"><b>Comments</b></th>
                                                                                 <th scope="col"><b>Delete</b></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {% with my_counter=0 %}
                                                                                 {% for c in comments %}
                                                                                     {% if c.holiday_details.id == row.4 %}
-                                                                                        {% with my_counter=my_counter|add:1 %}
-                                                                                            <tr class="border-bottom border-dark">
-                                                                                                <td>{{ my_counter }}</td>
-                                                                                                <td>{{ c.comment }}</td>
-                                                                                                <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{ month }}&year={{ year }}" class="btn btn-outline-warning text-grey ms-auto"><i class="fa fa-trash"></i></a></td>
-                                                                                            </tr>
-                                                                                        {% endwith %}
+                                                                                        <tr class="border-bottom border-white">
+                                                                                            <td></td> <!-- Sl no column will be populated by JavaScript -->
+                                                                                            <td>{{ c.comment }}</td>
+                                                                                            <td><a href="{% url 'company_holiday_overview_comment_delete' c.id %}?month={{ month }}&year={{ year }}" style="color: rgb(230, 128, 97);"><i class="fa fa-trash"></i></a></td>
+                                                                                        </tr>
                                                                                     {% endif %}
                                                                                 {% endfor %}
-                                                                            {% endwith %}
-
-
-                                                                        
                                                                     
-
-
-                                                                            
                                                                         </tbody>
                                                                     </table>
+
+                                                                    
                                                                 </div> 
                                                                 <form action="{% url 'company_holiday_overview_comment' row.4 %}?month={{month}}&year={{year}}" method="post">
                                                                     {% csrf_token %}
-                                                                <div class="modal-body">
+                                                                <div class="modal-body mt-3">
+                                                                    <label>Add Comment</label>
                                                                     <div><textarea name="comment" cols="5" rows="3" class="form-control text-white" required></textarea></div><br>
                                                                 
                                                                 </div>
@@ -336,27 +329,28 @@
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
                                                                 <h2 class="modal-title text-white">Holiday History</h2>
-                                                                <button type="button" class="btn" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
+                                                                <button type="button" class="btn" data-dismiss="modal" aria-label="Close">X</button>
                                                                 </div>
                                                                 <div class="table-responsive">
                                                                     
-                                                                    <table  class="table mt-lg-5 mt-2 rounded" style="color: white; background-color: black;" id="CommentTable">
+                                                                    <!-- History table -->
+                                                                    <table class="table mt-lg-5 mt-2 rounded historyTable " style="background-color: black;color: white;">
                                                                         <thead>
-                                                                            <tr class="border-bottom border-dark">
-                                                                                <th scope="col"><b>Date </b></th>
+                                                                            <tr class="border-bottom border-white">
+                                                                                <th scope="col"><b>Sl no</b></th>
+                                                                                <th scope="col"><b>Date</b></th>
                                                                                 <th scope="col"><b>Action</b></th>
-                                                                                <th scope="col"><b>User</b></th>
+                                                                                <th scope="col"><b>By</b></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
                                                                             {% for h in holiday_history %}
                                                                             {% if h.holiday.id == row.4 %}
-                                                                            <tr class="border-bottom border-dark">
-                                                                                <td>{{h.date}}</td>
-                                                                                <td>{{h.action}}</td>
-                                                                                <td>{{h.user.first_name}}</td>
+                                                                            <tr class="border-bottom border-white">
+                                                                                <td></td> <!-- Sl no column will be populated by JavaScript -->
+                                                                                <td>{{ h.date }}</td>
+                                                                                <td>{{ h.action }}</td>
+                                                                                <td>{{ h.user.first_name }} {{ h.user.last_name }}</td>
                                                                             </tr>
                                                                             {% endif %}
                                                                             {% endfor %}
@@ -373,9 +367,10 @@
                                     
                                                         <!-- modal end -->
                                                     </td>
-                                                    
+                        
                                                 </tr>
                                                 {% endfor %}
+                                            
                                             </tbody>
                                         </table>
                                     </div>
@@ -797,6 +792,51 @@
         }
 
 
+        window.onload = function() {
+            var tables = document.querySelectorAll(".commentTable"); // Select all tables with class 'commentTable'
+
+            // Iterate through each table
+            tables.forEach(function(table) {
+                var rows = table.querySelectorAll("tbody tr"); // Select rows in the current table
+
+                // Iterate through each row starting from the second row
+                for (var i = 1; i < rows.length; i++) {
+                    var row = rows[i];
+                    var serialNumberCell = row.firstElementChild; // Get first cell in the current row
+                    serialNumberCell.textContent = i; // Set serial number starting from 1
+                }
+            });
+        }
+
+
+
+        window.onload = function() {
+            // Populate serial numbers for comment tables
+            var commentTables = document.querySelectorAll(".commentTable");
+            commentTables.forEach(function(commentTable) {
+                var rows = commentTable.querySelectorAll("tbody tr");
+                for (var i = 1; i < rows.length; i++) {
+                    var row = rows[i];
+                    var serialNumberCell = row.firstElementChild;
+                    serialNumberCell.textContent = i;
+                }
+            });
+
+            // Populate serial numbers for history tables
+            var historyTables = document.querySelectorAll(".historyTable");
+            historyTables.forEach(function(historyTable) {
+                var rows = historyTable.querySelectorAll("tbody tr");
+                for (var j = 1; j < rows.length; j++) {
+                    var row = rows[j];
+                    var serialNumberCell = row.firstElementChild;
+                    serialNumberCell.textContent = j;
+                }
+            });
+        }
+
+
+
+
 
 
 
@@ -833,3 +873,4 @@
 
 
 {% endblock %}
+
