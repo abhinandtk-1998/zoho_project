@@ -1444,7 +1444,7 @@ def company_holiday_overview_email_send(request):
 
             if request.method=="POST":
 
-                h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=company_id)
+                h1 = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, company=company_id) | Q(end_date__month=month, end_date__year=year, company=company_id))
                 holiday_d = {}
                 j = 1
 
@@ -1528,7 +1528,7 @@ def company_holiday_overview_email_send(request):
 
             if request.method=="POST":
 
-                h1 = Holiday.objects.filter(start_date__month=month, start_date__year=year, company=staff_id.company)
+                h1 = Holiday.objects.filter(Q(start_date__month=month, start_date__year=year, company=staff_id.company) | Q(end_date__month=month, end_date__year=year, company=staff_id.company))
                 holiday_d = {}
                 j = 1
 

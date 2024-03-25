@@ -344,7 +344,7 @@ class CustomerHistory(models.Model):
     action = models.CharField(max_length=220,null=True,blank=True)
     date = models.DateField(auto_now_add=True, null=True, blank=True)
 
-
+#------------- Holiday --------------#
 class Holiday(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
